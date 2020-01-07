@@ -60,7 +60,7 @@ $bit_classroom = $string;
 function get_Show_cat_Result()
 {
     include('../news/includes/config.php');
-    $sqlQuery = "SELECT t2.bit_classroom FROM (SELECT ceil(COUNT(school_id)/2) AS CONT_RESULT,bit_classroom FROM tbl_contents AS a   GROUP BY a.bit_classroom) t1 INNER JOIN (SELECT b.bit_classroom ,COUNT(a.school_contents_id) AS A1 FROM log_contents_history_student AS a INNER JOIN tbl_contents AS b WHERE a.school_contents_id=b.contents_id AND a.student_id=".$GLOBALS['student_id']." GROUP BY b.bit_classroom) t2 where t1.bit_classroom=t2.bit_classroom AND t2.A1>=t1.CONT_RESULT";
+    $sqlQuery = "SELECT t2.bit_classroom FROM (SELECT ceil(COUNT(school_id)/2) AS CONT_RESULT,bit_classroom FROM tbl_contents AS a  WHERE a.enable=1   GROUP BY a.bit_classroom) t1 INNER JOIN (SELECT b.bit_classroom ,COUNT(a.school_contents_id) AS A1 FROM log_contents_history_student AS a INNER JOIN tbl_contents AS b WHERE a.school_contents_id=b.contents_id AND a.student_id=".$GLOBALS['student_id']." AND b.enable=1 GROUP BY b.bit_classroom) t2 where t1.bit_classroom=t2.bit_classroom AND t2.A1>=t1.CONT_RESULT";
     $sql = mysqli_query($con,$sqlQuery);
     $finsishedLesson = [];
     while ($row = mysqli_fetch_assoc($sql)) 
@@ -91,9 +91,9 @@ function get_new_icon_Result()
     FROM log_contents_history_student AS a 
     INNER JOIN 
     tbl_contents AS b 
-    WHERE a.school_contents_id=b.contents_id AND a.student_id=".$GLOBALS['student_id'].") AS t1 
+    WHERE a.school_contents_id=b.contents_id AND b.enable=1 AND a.student_id=".$GLOBALS['student_id'].") AS t1 
         INNER JOIN 
-    (SELECT contents_id ,bit_classroom FROM tbl_contents) AS t2 
+    (SELECT contents_id ,bit_classroom FROM tbl_contents WHERE enable=1) AS t2 
     WHERE t1.school_contents_id=t2.contents_id GROUP BY t1.bit_classroom) AS t1_2";
     $sql = mysqli_query($con,$sqlQuery);
     $icon_remove_lesson = [];
