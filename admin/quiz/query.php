@@ -938,8 +938,15 @@ img {
                     <div class="in">
                         <button class="navbar-toggler collapsed query-edit" type="button" data-toggle="collapse" data-target="#mappingBlock" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">Add</button>
                         <div class="contents navbar-collapse collapse" id="mappingBlock">
+                        <div class="w-100">
                             <dl>
-                                <dt><br>Select the lesson from which the question actually belongs</dt>
+                                <dt><br><table class="select-answer">
+                               <thead>
+                               <tr>
+                                   <th class="correct">Select the lesson from which the question actually belongs</th>
+                                </tr>
+                               </thead>
+                                </table></dt>
                                 <dd>
                                     <?php 
                                         echo "<br>";
@@ -961,15 +968,15 @@ img {
                                                         $checkedOrNot = "checked=checked";
                                                     }
                                                 }
-                                                echo('<input type="checkbox" name="check_list[]" value="'.$value["contents_id"][$i].'" '.$checkedOrNot.'> '.$value["contents_name"][$i].'<p>    </p>');
-                                            }
-                                                
+                                                echo('<label class="customcheck"><input type="checkbox"  name="check_list[]" value="'.$value["contents_id"][$i].'" '.$checkedOrNot.'> '.$value["contents_name"][$i].'<span class="checkmark"></span></label><p></p>') ;                                                
+                                            }                                                
                                             echo("<br>");
                                         }
                                     ?>
                                 </dd>
                                 
                             </dl>
+                                    </div>
                         </div>
                     </div>
                 </div>
