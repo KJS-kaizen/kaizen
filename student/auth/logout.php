@@ -7,7 +7,7 @@ setcookie(session_name(), '', time() - 3600, '/'); //クッキーを削除
 session_destroy(); //セッションを破棄
 
 $base = (empty($_SERVER['HTTPS']) ? 'http://' : 'https://') . $_SERVER['HTTP_HOST'];
-header('Location: ' . $base . '/student/auth/');
+header('Location: ' . $base . '/kaizen/student/auth/');
 exit();
 ?>
 <!DOCTYPE html>
