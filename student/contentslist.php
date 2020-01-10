@@ -116,10 +116,10 @@ function dbToCsvConverter($input)
     $t =  (string)count($split)."-0x".$split[count($split)-1];
     return $t;
 }
-$contentsRecommendationList = [];
-$subCategoryRecommendationList = [];
-$categoryRecommendationList = [];
-$subCategoryContentsCount=[];
+$contentsRecommendationList = [];   // contains only contents_id which should be recommended to user
+$subCategoryRecommendationList = [];    // contains only subcategory_id(in csv format) (those subcategory id whose contents_id has been recommended)  
+$categoryRecommendationList = [];       // contains only category_id(in csv format) (those category id whose subcategorie's contents_id has been recommended)
+$subCategoryContentsCount=[];           // it is an assosiative array which represents that which subcategory has how many recommended contents
 // $servername = "localhost";
 // $username = "root";
 // $password = "";
@@ -169,24 +169,27 @@ NOT IN
 $result = $con->query($sql);
 if ($result->num_rows > 0) {
     while($row = $result->fetch_assoc()) {
-       array_push($contentsRecommendationList,$row["contents_id"]);
+       array_push($contentsRecommendationList,$row["contents_id"]); // inserting contents_id in $contentsRecommendationList array
        $sql="select bit_classroom from tbl_contents where contents_id = ".$row['contents_id'];
        $subResult = $con->query($sql);
        while($subRow = $subResult->fetch_assoc())
        {
-           $tmp = dbToCsvConverter($subRow["bit_classroom"]);
+           $tmp = dbToCsvConverter($subRow["bit_classroom"]);   // subcategory id is converting to csv format from DB bit_classroom format
            if(!isset($subCategoryContentsCount[$tmp]))
            {
-               $subCategoryContentsCount[$tmp] = 1;
+               $subCategoryContentsCount[$tmp] = 1;             // how many recommended contents are there for a subcategory id that is counting here
            }
            else
            {
                $subCategoryContentsCount[$tmp]++;
            }
-           array_push($subCategoryRecommendationList,$tmp);
+           if(!in_array($tmp,$subCategoryRecommendationList))
+           {
+               array_push($subCategoryRecommendationList,$tmp); // inserting subcategory id in $subCategoryRecommendationList
+           }
            if(!in_array($csvRowC[$tmp],$categoryRecommendationList))
            {
-               array_push($categoryRecommendationList,$csvRowC[$tmp]);
+               array_push($categoryRecommendationList,$csvRowC[$tmp]);  // inserting category id in $categoryRecommendationList
            }
        }
     }
@@ -584,7 +587,7 @@ for($current = count($csvMenu); $current >= 1; $current --) {
 						${'menu' . $current}[$key] .= ' class="open"';
 						$subject_genre_name = $csvName[$line];
                     }
-                    $parentLabel = (in_array($line,$categoryRecommendationList)) ? '<span class="recommend">Recommend('.count($contentsRecommendationList).')</span>':"";
+                    $parentLabel = (in_array($line,$categoryRecommendationList)) ? '<span class="recommend">Recommend('.count($subCategoryRecommendationList).')</span>':"";
                     ${'menu' . $current}[$key] .= '>' . "\n" .'<a class="togglebtn">' . $csvName[$line] .$parentLabel. '</a>' . "\n";
 					${'menu' . $current}[$key] .= ${'menu' . ($current + 1)}[$line] .'</li>' . "\n"; //子項目を挿入 Insert child item
 				}
@@ -618,8 +621,7 @@ for($current = count($csvMenu); $current >= 1; $current --) {
                             ${'menu' . $current}[$key] .= ' class="active"';
                             $subject_section_name = $csvName[$line];
                         }
-                        $lessonCount = (isset($subCategoryContentsCount[$line])) ? "(".(string)$subCategoryContentsCount[$line].")":"";
-                        $childLabel = (in_array($line,$subCategoryRecommendationList)) ? "<span class='new'>Recommend".$lessonCount."</span>":""; /* For Recommendation */
+                        $childLabel = (in_array($line,$subCategoryRecommendationList)) ? "<span class='new'>Recommend</span>":""; /* For Recommendation */
                         ${'menu' . $current}[$key] .= '><a href="' . $_SERVER['SCRIPT_NAME'] . '?bid=' . $line . '">' . $csvName[$line] . $childLabel. $icon .'</a></li>' . "\n";
                     }
                 }
@@ -682,18 +684,6 @@ echo $menu1[''];
 
                                     switch ($item['type']) {
                                     case 0:
-                                        $marker=null;
-                                        $icon=null;
-                                        if(in_array($item['primary_key'],$contentsRecommendationList))
-                                        {
-                                            $marker = "<div class='title'style='background-color:#FAEBD7;'>";
-                                            $icon = "<span class='recommend'>Recommend</span>";
-                                        }
-                                        else
-                                        {
-                                            $marker = "<div class='title'>";
-                                            $icon="";
-                                        }
                                         if ($item['contents_extension_id'] <= 6) {
                                             echo "
                                                 <!-- contents item = TB -->
@@ -703,7 +693,7 @@ echo $menu1[''];
                                                             <a class='tb3_play' href='contents/contents_play.php?c_id=" .$item[ 'primary_key' ]. "&bid=" . $_GET['bid'] ."&s_id=" .$student_id . "&e_id=" . $item[ 'contents_extension_id' ] ."'
                                                                 data-contentID=".$item[ 'primary_key' ]."
                                                                 data-extensionID=".$item[ 'contents_extension_id' ]."
-                                                                data-title=".$item[ 'title' ].">". $item['title'] . $icon . "
+                                                                data-title=".$item[ 'title' ].">". $item['title'] ."
                                                             </a>
                                                         </div>
                                                         <div class='detail-info'>
@@ -895,7 +885,7 @@ echo $menu1[''];
                                                             <a class='tb3_play' href='contents/contents_play.php?c_id=" .$item[ 'primary_key' ]. "&bid=" . $_GET['bid'] ."&s_id=" .$student_id . "&e_id=" . $item[ 'contents_extension_id' ] ."'
                                                                 data-contentID=".$item[ 'primary_key' ]."
                                                                 data-extensionID=".$item[ 'contents_extension_id' ]."
-                                                                data-title=".$item[ 'title' ].">" . $item['title'] . $icon."
+                                                                data-title=".$item[ 'title' ].">" . $item['title']."
                                                             </a>
                                                         </div>
                                                         <div class='detail-info'>
@@ -1640,18 +1630,7 @@ echo $menu1[''];
                                         switch ( $item['child_data'][$j]['type'] ) {
 
                                           case 0:
-                                            $marker=null;
-                                            $icon=null;
-                                            if(in_array($item[ 'child_data' ][ $j ][ 'primary_key' ],$contentsRecommendationList))
-                                            {
-                                                $marker = "<div class='title'style='background-color:#FAEBD7;'>";
-                                                $icon = "<span class='recommend'>Recommend</span>";
-                                            }
-                                            else
-                                            {
-                                                $marker = "<div class='title'>";
-                                                $icon="";
-                                            }
+                                            
                                           if ($item['child_data'][$j]['contents_extension_id'] <= 6) {
                                               echo "
                                                   <!-- contents item = TB -->
@@ -1661,7 +1640,7 @@ echo $menu1[''];
                                                               <a class='tb3_play' href='contents/contents_play.php?c_id=" .$item[ 'child_data' ][ $j ][ 'primary_key' ]. "&bid=" . $_GET['bid'] ."&s_id=" .$student_id . "&e_id=" . $item[ 'child_data' ][ $j ][ 'contents_extension_id' ] ."'
                                                                   data-contentID=".$item[ 'child_data' ][ $j ][ 'primary_key' ]."
                                                                   data-extensionID=".$item[ 'child_data' ][ $j ][ 'contents_extension_id' ]."
-                                                                  data-title=".$item[ 'child_data' ][ $j ][ 'title' ].">" . $item[ 'child_data' ][ $j ]['title'] . $icon."
+                                                                  data-title=".$item[ 'child_data' ][ $j ][ 'title' ].">" . $item[ 'child_data' ][ $j ]['title']."
                                                               </a>
                                                           </div>
                                                           <div class='detail-info'>
@@ -1868,7 +1847,7 @@ echo $menu1[''];
                                                               <a class='tb3_play' href='contents/contents_play.php?c_id=" .$item[ 'child_data' ][ $j ][ 'primary_key' ]. "&bid=" . $_GET['bid'] ."&s_id=" .$student_id . "&e_id=" . $item[ 'child_data' ][ $j ][ 'contents_extension_id' ] ."'
                                                                   data-contentID=".$item[ 'child_data' ][ $j ][ 'primary_key' ]."
                                                                   data-extensionID=".$item[ 'child_data' ][ $j ][ 'contents_extension_id' ]."
-                                                                  data-title=".$item[ 'child_data' ][ $j ][ 'title' ].">" . $item[ 'child_data' ][ $j ]['title'] . $icon."
+                                                                  data-title=".$item[ 'child_data' ][ $j ][ 'title' ].">" . $item[ 'child_data' ][ $j ]['title']."
                                                               </a>
                                                           </div>
                                                           <div class='detail-info'>
