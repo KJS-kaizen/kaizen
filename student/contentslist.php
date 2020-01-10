@@ -57,56 +57,56 @@ $bit_classroom = $string;
 //------CSV読込部分 ここまで------CSV reading up to here
 
 /* For unlocking Lessons */
-function get_Show_cat_Result()
-{
-    include('../news/includes/config.php');
-    $sqlQuery = "SELECT t2.bit_classroom FROM (SELECT ceil(COUNT(school_id)/2) AS CONT_RESULT,bit_classroom FROM tbl_contents AS a  WHERE a.enable=1   GROUP BY a.bit_classroom) t1 INNER JOIN (SELECT b.bit_classroom ,COUNT(DISTINCT a.school_contents_id) AS A1 FROM log_contents_history_student AS a INNER JOIN tbl_contents AS b WHERE a.school_contents_id=b.contents_id AND a.student_id=".$GLOBALS['student_id']." AND b.enable=1 GROUP BY b.bit_classroom) t2 where t1.bit_classroom=t2.bit_classroom AND t2.A1>=t1.CONT_RESULT";
-    $sql = mysqli_query($con,$sqlQuery);
-    $finsishedLesson = [];
-    while ($row = mysqli_fetch_assoc($sql)) 
-    {
-        $resultvalue= explode("-", $row['bit_classroom']);
-        $csvvalue= count($resultvalue)."-0x".$resultvalue[count($resultvalue)-1];
-        array_push($finsishedLesson,$csvvalue);
+// function get_Show_cat_Result()
+// {
+//     include('../news/includes/config.php');
+//     $sqlQuery = "SELECT t2.bit_classroom FROM (SELECT ceil(COUNT(school_id)/2) AS CONT_RESULT,bit_classroom FROM tbl_contents AS a  WHERE a.enable=1   GROUP BY a.bit_classroom) t1 INNER JOIN (SELECT b.bit_classroom ,COUNT(DISTINCT a.school_contents_id) AS A1 FROM log_contents_history_student AS a INNER JOIN tbl_contents AS b WHERE a.school_contents_id=b.contents_id AND a.student_id=".$GLOBALS['student_id']." AND b.enable=1 GROUP BY b.bit_classroom) t2 where t1.bit_classroom=t2.bit_classroom AND t2.A1>=t1.CONT_RESULT";
+//     $sql = mysqli_query($con,$sqlQuery);
+//     $finsishedLesson = [];
+//     while ($row = mysqli_fetch_assoc($sql)) 
+//     {
+//         $resultvalue= explode("-", $row['bit_classroom']);
+//         $csvvalue= count($resultvalue)."-0x".$resultvalue[count($resultvalue)-1];
+//         array_push($finsishedLesson,$csvvalue);
  
-    }
-    return $finsishedLesson;
-}
+//     }
+//     return $finsishedLesson;
+// }
 /* For unlocking Lessons */
 
 
-/* For New Icon */
+// /* For New Icon */
 
-function get_new_icon_Result()
-{
-    include('../news/includes/config.php');
-    $sqlQuery = "SELECT t1_1.bit_classroom
-    FROM (select t1.bit_classroom
-    FROM tbl_quiz t1 INNER JOIN tbl_quiz_answer t2
-    ON t1.quiz_id = t2.quiz_id where t2.student_id = ".$GLOBALS['student_id']." GROUP BY t1.bit_classroom) AS t1_1
-    UNION
-    SELECT t1_2.bit_classroom
-    FROM (SELECT t1.bit_classroom
-    FROM (SELECT b.bit_classroom ,a.school_contents_id,a.student_id  
-    FROM log_contents_history_student AS a 
-    INNER JOIN 
-    tbl_contents AS b 
-    WHERE a.school_contents_id=b.contents_id AND b.enable=1 AND a.student_id=".$GLOBALS['student_id'].") AS t1 
-        INNER JOIN 
-    (SELECT contents_id ,bit_classroom FROM tbl_contents WHERE enable=1) AS t2 
-    WHERE t1.school_contents_id=t2.contents_id GROUP BY t1.bit_classroom) AS t1_2";
-    $sql = mysqli_query($con,$sqlQuery);
-    $icon_remove_lesson = [];
-    while ($row = mysqli_fetch_assoc($sql)) 
-    {
-        $resultvalue= explode("-", $row['bit_classroom']);
-        $csvvalue= count($resultvalue)."-0x".$resultvalue[count($resultvalue)-1];
-        array_push($icon_remove_lesson,$csvvalue);
+// function get_new_icon_Result()
+// {
+//     include('../news/includes/config.php');
+//     $sqlQuery = "SELECT t1_1.bit_classroom
+//     FROM (select t1.bit_classroom
+//     FROM tbl_quiz t1 INNER JOIN tbl_quiz_answer t2
+//     ON t1.quiz_id = t2.quiz_id where t2.student_id = ".$GLOBALS['student_id']." GROUP BY t1.bit_classroom) AS t1_1
+//     UNION
+//     SELECT t1_2.bit_classroom
+//     FROM (SELECT t1.bit_classroom
+//     FROM (SELECT b.bit_classroom ,a.school_contents_id,a.student_id  
+//     FROM log_contents_history_student AS a 
+//     INNER JOIN 
+//     tbl_contents AS b 
+//     WHERE a.school_contents_id=b.contents_id AND b.enable=1 AND a.student_id=".$GLOBALS['student_id'].") AS t1 
+//         INNER JOIN 
+//     (SELECT contents_id ,bit_classroom FROM tbl_contents WHERE enable=1) AS t2 
+//     WHERE t1.school_contents_id=t2.contents_id GROUP BY t1.bit_classroom) AS t1_2";
+//     $sql = mysqli_query($con,$sqlQuery);
+//     $icon_remove_lesson = [];
+//     while ($row = mysqli_fetch_assoc($sql)) 
+//     {
+//         $resultvalue= explode("-", $row['bit_classroom']);
+//         $csvvalue= count($resultvalue)."-0x".$resultvalue[count($resultvalue)-1];
+//         array_push($icon_remove_lesson,$csvvalue);
  
-    }
-    return $icon_remove_lesson;
-}
-/* For New Icon */
+//     }
+//     return $icon_remove_lesson;
+// }
+// /* For New Icon */
 
 
 /*For Recommendation */
@@ -592,29 +592,29 @@ for($current = count($csvMenu); $current >= 1; $current --) {
 					${'menu' . $current}[$key] .= ${'menu' . ($current + 1)}[$line] .'</li>' . "\n"; //子項目を挿入 Insert child item
 				}
 			} else {
-                /* For Unlocking */
-                $finsishedLesson = get_Show_cat_Result();
-                $unlockedLesson = [];
-                for($i=0;$i<count($finsishedLesson);$i++)
-                {
-                    if(isset($finsishedLesson[$i]) && isset($csvTree[2][$csvRowC[$finsishedLesson[$i]]]))
-                    {
-                        if(isset($csvTree[2][$csvRowC[$finsishedLesson[$i]]][array_search($finsishedLesson[$i],$csvTree[2][$csvRowC[$finsishedLesson[$i]]])+1]))
-                        array_push($unlockedLesson,$csvTree[2][$csvRowC[$finsishedLesson[$i]]][array_search($finsishedLesson[$i],$csvTree[2][$csvRowC[$finsishedLesson[$i]]])+1]);
-                    }
+                // /* For Unlocking */
+                // $finsishedLesson = get_Show_cat_Result();
+                // $unlockedLesson = [];
+                // for($i=0;$i<count($finsishedLesson);$i++)
+                // {
+                //     if(isset($finsishedLesson[$i]) && isset($csvTree[2][$csvRowC[$finsishedLesson[$i]]]))
+                //     {
+                //         if(isset($csvTree[2][$csvRowC[$finsishedLesson[$i]]][array_search($finsishedLesson[$i],$csvTree[2][$csvRowC[$finsishedLesson[$i]]])+1]))
+                //         array_push($unlockedLesson,$csvTree[2][$csvRowC[$finsishedLesson[$i]]][array_search($finsishedLesson[$i],$csvTree[2][$csvRowC[$finsishedLesson[$i]]])+1]);
+                //     }
                     
-                }
-                $LS = $csvTree[2][$key][0];
+                // }
+                // $LS = $csvTree[2][$key][0];
 
                 
-                /* For New Icon */
-                $icon_remove_lesson = get_new_icon_Result();
-                $icon = (in_array($line,$icon_remove_lesson)|| ($line ==$LS)) ? "":"<span class='recommend'>New</span>";
-                /* For New Icon */
+                // /* For New Icon */
+                // $icon_remove_lesson = get_new_icon_Result();
+                // $icon = (in_array($line,$icon_remove_lesson)|| ($line ==$LS)) ? "":"<span class='recommend'>New</span>";
+                // /* For New Icon */
 
 
-                if($LS == $line || in_array($line,$unlockedLesson))
-                {                                                                   /* For Unlocking */
+                // if($LS == $line || in_array($line,$unlockedLesson))
+                // {                                                                   /* For Unlocking */
                     if(search_multi($csvpath . 'contents.csv', $line, $csvTreeU, $selectU)) { //CSV照合 CSV collation
                         ${'menu' . $current}[$key] .= '<li';
                         if($line == $_GET['bid']) {
@@ -622,9 +622,9 @@ for($current = count($csvMenu); $current >= 1; $current --) {
                             $subject_section_name = $csvName[$line];
                         }
                         $childLabel = (in_array($line,$subCategoryRecommendationList)) ? "<span class='new'>Recommend</span>":""; /* For Recommendation */
-                        ${'menu' . $current}[$key] .= '><a href="' . $_SERVER['SCRIPT_NAME'] . '?bid=' . $line . '">' . $csvName[$line] . $childLabel. $icon .'</a></li>' . "\n";
-                    }
-                }
+                        ${'menu' . $current}[$key] .= '><a href="' . $_SERVER['SCRIPT_NAME'] . '?bid=' . $line . '">' . $csvName[$line] . $childLabel .'</a></li>' . "\n";
+                     }
+                //}
 			}
 		}
 		${'menu' . $current}[$key] .= '</ul>' . "\n";
