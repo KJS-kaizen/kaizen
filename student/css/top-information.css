@@ -241,3 +241,37 @@
         width: 35px ;
     }
 }
+
+/* Video================================================ */
+
+#video {
+    margin: 25px auto 5px auto;
+    border-radius: 1px;
+    box-shadow: 1px 1px 1px 1px #2e2e1f;
+    overflow: hidden;
+    z-index: 1;
+    height: 200px;
+    width: 320px;
+  }
+
+.video-heading {
+    margin: 20px auto 5px auto;
+    text-align: center ;
+    font-size: 2rem ;
+    color:#5a6875 ;
+    font-weight: 600 ;
+}
+
+.video-explanation {
+    margin: 50px 0 10px 30px;
+    text-align: center ;
+    font-size: 1.7rem ;
+    color:#5A6875 ;
+    font-weight: 400 ;
+    line-height: 1.6;
+}
+
+.jumbotron
+{
+    background-color: #E6E6E6;
+}

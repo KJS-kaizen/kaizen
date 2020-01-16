@@ -109,6 +109,7 @@ if (isset($_POST['register'])) {
     <link rel="stylesheet" href="../../assets/css/helpers.css">
     <link rel="stylesheet" href="../../assets/css/style.css">
     <link rel="stylesheet" href="../../assets/css/landing-2.css">
+    <link rel="stylesheet" href="../../assets/css/custom.css">
     <script src="../js/alert.js"></script>
 </head>
 <body data-spy="scroll" data-target="#pb-navbar" data-offset="200">
@@ -200,17 +201,17 @@ if (isset($_POST['register'])) {
                 <div class="col-lg-1">
                 </div>
                 <div class="col-lg-5 col-md-12 col-sm-12">
-                    <img data-toggle="modal" data-target="#homeVideo" class="img-fluid" alt="Image placeholder" src="../../assets/images/thumbnail.png" width="490" height="300" onclick="playVid()" />
+                    <img data-toggle="modal" data-target="#homeVideo" class="img-fluid" alt="Image placeholder" src="../../assets/images/thumbnail.png" width="560" height="315" onclick="playVid()" />
                     <div class="modal fade" id="homeVideo" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
                         <div class="modal-dialog" role="document">
                             <div class="modal-content">
                                 <button type="button" class="btn btn-default" data-dismiss="modal" onclick="pauseVid()">Close</button>
                                 <div class="embed-responsive embed-responsive-16by9">
                                     <video id="gossVideo" class="embed-responsive-item" controls="controls" poster="https://www.gossettmktg.com/video/dangot.png">
-                                        <source src="../../assets/images/video.mp4" type="video/mp4">
-                                        <source src="../../assets/images/video.webm" type="video/webm">
-                                        <source src="../../assets/images/video.ogv" type="video/ogg">
-                                        <object type="application/x-shockwave-flash" data="https://releases.flowplayer.org/swf/flowplayer-3.2.1.swf" width="690" height="300">
+                                        <source src="../../assets/images/kaizen-sample.mp4" type="video/mp4">
+                                        <source src="../../assets/images/kaizen-sample.webm" type="video/webm">
+                                        <source src="../../assets/images/kaizen-sample.ogv" type="video/ogg">
+                                        <object type="application/x-shockwave-flash" data="https://releases.flowplayer.org/swf/flowplayer-3.2.1.swf" width="560" height="315">
                                             <param name="movie" value="https://releases.flowplayer.org/swf/flowplayer-3.2.1.swf">
                                             <param name="allowFullScreen" value="true">
                                             <param name="wmode" value="transparent">
@@ -310,8 +311,51 @@ if (isset($_POST['register'])) {
 
     <!--START Section -->
     <section class="pb_section bg-light pb_slant-white" id="section-registration">
+    <div class="container">
+    <div class="row justify-content-center mb-5 mt-0">
+                <div class="col-md-6 text-center mb-1">
+                    <h2>Instruction Video For Beginners to How to Use LMS system</h2>
+                </div>
+            </div>
+    <div class="row align-items-center justify-content-center">
+                <div class="col-lg-6 pl-md-12 pl-sm-12">
+                    <div class="media pb_feature-v2 text-left mb-1 mt-1">
+                        <div class="media-body">
+                            <p class="pb_font-25">Kaizen is a Japanese methodology which has a proven track-record in improving productivity and quality. Kaizen has been increasingly adopted by organization around the world. Although Kaizen has started from industries, it is now spread out to all kinds of public and private sectors.</p>
+                            <br>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-1">
+                </div>
+                <div class="col-lg-5 col-md-12 col-sm-12">
+                    <img data-toggle="modal" data-target="#homeVideo" class="img-fluid" alt="Image placeholder" src="../../assets/images/thumbnail.png" width="560" height="315" onclick="playVid()" />
+                    <div class="modal fade" id="homeVideo" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="pauseVid()">Close</button>
+                                <div class="embed-responsive embed-responsive-16by9">
+                                    <video id="gossVideo" class="embed-responsive-item" controls="controls" poster="https://www.gossettmktg.com/video/dangot.png">
+                                        <source src="../../assets/images/video.mp4" type="video/mp4">
+                                        <source src="../../assets/images/video.webm" type="video/webm">
+                                        <source src="../../assets/images/video.ogv" type="video/ogg">
+                                        <object type="application/x-shockwave-flash" data="https://releases.flowplayer.org/swf/flowplayer-3.2.1.swf" width="560" height="315">
+                                            <param name="movie" value="https://releases.flowplayer.org/swf/flowplayer-3.2.1.swf">
+                                            <param name="allowFullScreen" value="true">
+                                            <param name="wmode" value="transparent">
+                                            <param name="flashVars" value="config={'playlist':['http%3A%2F%2Fwww.gossettmktg.com%2Fvideo%2Fdangot.png',{'url':'http%3A%2F%2Fwww.gossettmktg.com%2Fvideo%2Fdangot.mp4','autoPlay':false}]}">
+                                            <img alt="Image placeholder" src="../../assets/images/thumbnail.png" class="img-fluid" title="No video playback capabilities, please download the video below">
+                                        </object>
+                                    </video>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                  </div>
+              </div>
+            </div>
         <div class="container">
-            <div class="row justify-content-center mb-5">
+            <div class="row justify-content-center mt-5">
                 <div class="col-md-6 text-center mb-5">
                     <h5 class="text-uppercase pb_font-15 mb-2 pb_color-dark-opacity-3 pb_letter-spacing-2"><strong>Kaizen Member</strong></h5>
                     <h2>Registration And Login</h2>

@@ -317,14 +317,14 @@ if ( $display_data[ 'flg' ] == 'false' || $display_data == 'false' ) {
                                 <ul>
                                     <?php
                                         if($i != 0) {
-                                            echo "<li class='back'><button>Forward</button></li>";
+                                            echo "<li class='back'><button>Back</button></li>";
                                         }
                                         if($i != count($query_data) - 1) {
-                                            echo "<li class='next'><button>Netx</button></li>";
+                                            echo "<li class='next'><button>Next</button></li>";
                                         }
                                         if($i == count($query_data) - 1) {
                                             echo "
-                                                <li class='submit'><button>Send a questionnaire</button></li>
+                                                <li class='submit'><button>Submit</button></li>
                                                 <p id='cantion'>Questionnaire items for required items have not been answered</p>
                                             ";
                                         }

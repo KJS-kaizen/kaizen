@@ -128,9 +128,9 @@ if(isset($sort['register_datetime'])) {
                         <li>
                             <a href="contentslist.php"><span>Taking lectures</span></a>
                         </li>
-                        <li>
+                        <!-- <li>
                             <a href="message/message_list.php?p=1"><span>message</span></a>
-                        </li>
+                        </li> -->
                     </ul>
                 </nav>
             </div>
@@ -138,6 +138,47 @@ if(isset($sort['register_datetime'])) {
     </div>
     <!-- main container -->
     <div id="container-maincontents" class="container-maincontents">
+    <!-- <div class="jumbotron">
+    <p class="video-heading">Instruction Video For Beginners to How to Use LMS system</p>
+    <div class="row">
+    <div class="col-lg-6 col-md-12 col-sm-12">
+                    <p class="video-explanation">You create your own account for the micro-learning platform. Then you watch and learn about Kaizen from the video lessons created by Japanese experts. Afterwards, you conduct Kaizen activity by yourself and report its results to Japanese experts. They will provide feedbacks and suggestions to you.
+                      
+                        <br> </p>
+                </div>
+        
+        <div class="col-lg-6 col-md-12 col-sm-12">
+        <div id="video">
+            <img data-toggle="modal" data-target="#homeVideo" class="img-fluid" alt="Image placeholder" src="../assets/images/thumbnail.png" width="320" height="200" onclick="playVid()" />
+            <div class="modal fade" id="homeVideo" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <button type="button" class="btn btn-default" data-dismiss="modal" onclick="pauseVid()">Close</button>
+                            <div class="embed-responsive embed-responsive-16by9">
+                                <video id="gossVideo" class="embed-responsive-item" controls="controls" poster="https://www.gossettmktg.com/video/dangot.png">
+                                    <source src="../assets/images/video.mp4" type="video/mp4">
+                                    <source src="../assets/images/video.webm" type="video/webm">
+                                    <source src="../assets/images/video.ogv" type="video/ogg">
+                                    <object type="application/x-shockwave-flash" data="https://releases.flowplayer.org/swf/flowplayer-3.2.1.swf" width="690" height="300">
+                                        <param name="movie" value="https://releases.flowplayer.org/swf/flowplayer-3.2.1.swf">
+                                        <param name="allowFullScreen" value="true">
+                                        <param name="wmode" value="transparent">
+                                        <param name="flashVars" value="config={'playlist':['http%3A%2F%2Fwww.gossettmktg.com%2Fvideo%2Fdangot.png',{'url':'http%3A%2F%2Fwww.gossettmktg.com%2Fvideo%2Fdangot.mp4','autoPlay':false}]}">
+                                        <img alt="Image placeholder" src="../assets/images/thumbnail.png" class="img-fluid" title="No video playback capabilities, please download the video below">
+                                    </object>
+                                </video>
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+                
+</div>
+</div> -->
+        
+        
+                
         <!-- information -->
         <div id="top-information" class="top-information">
             <div class="h2 clearfix">
@@ -224,34 +265,44 @@ if(isset($sort['register_datetime'])) {
                 <a href="contentslist.php">Take a lecture</a>
             </div>
             <div class="mainmenubtn message">
-                <div class="h3">
+                <!-- <div class="h3">
                     <h3><img src="images/icon_mainmenu_message.png">Send and see messages</h3>
                 </div>
                 <p class="text">You can exchange messages with managers and instructors.</p>
                 <a href="message/message_list.php?p=1">View and send messages</a>
-            </div>
+            </div> -->
+            <div class="h3">
+                    <h3><img src="images/interact.png">BBS, Chat and Report</h3>
+                </div>
+                <p class="text">You can interact with KAIZEN professionals and other participants and submit your report to the professionals.</p>
+                <a href="https://procon-academy.cybozu.com">BBS, Chat and Report</a>
         </div>
 
 
         <div id="top-mainmenubtngroup" class="top-mainmenubtngroup clearfix">
             <div class="mainmenubtn study">
-                <div class="h3">
-                    <h3><img src="images/interact.png">BBS, Chat and Report</h3>
-                </div>
-                <p class="text">You can interact with KAIZEN professionals and other participants and submit your report to the professionals.</p>
-                <a href="https://procon-academy.cybozu.com">BBS, Chat and Report</a>
-            </div>
-            <div class="mainmenubtn message">
-                <div class="h3">
+            <div class="h3">
                     <h3><img src="images/1066371.png">Frequently Asked Questions</h3>
                 </div>
-                <p class="text">You can clarify your douts and questions.</p>
+                <p class="text">You can clarify your doubts and questions.</p>
                 <a href="message/faq.php">FAQ</a>
             </div>
+            <!-- <div class="mainmenubtn message">
+               
+            </div> -->
         </div>
     </div>
 </div>
-
-
+<script>
+    var vid = document.getElementById("gossVideo");
+    function playVid() 
+    {
+        vid.play();
+    }
+    function pauseVid() 
+    {
+        vid.pause();
+    }
+</script>
 </body>
 </html>
