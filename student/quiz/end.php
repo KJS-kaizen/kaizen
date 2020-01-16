@@ -136,9 +136,9 @@ if ( $display_data[ 'flg' ] == 'false' || $display_data == 'false' ) {
                         <li class="active">
                             <a href="../contentslist.php"><span>Taking lectures</span></a>
                         </li>
-                        <li>
+                        <!-- <li>
                             <a href="../message/message_list.php"><span>message</span></a>
-                        </li>
+                        </li> -->
                     </ul>
                 </nav>
             </div>

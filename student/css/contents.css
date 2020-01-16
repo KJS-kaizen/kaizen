@@ -41,9 +41,9 @@ subject-list
     margin-bottom: 5px ;
     display: block ;
 }
-.subject-list-body{
+/* .subject-list-body{
 
-}
+} */
 .subject-list-accordion{
     width: 100% ;
     padding-bottom: 10px ;
@@ -138,9 +138,9 @@ subject-list
     height: 20px ;
     border-radius: 20px ;
     padding: 2px 5px ;
-    margin: 0 5px ;
+    margin: 5px 0 0 0 ;
     display: block ;
-    float: right ;
+    float: none ;
     font-size: 0.9em ;
 }
 
@@ -148,14 +148,24 @@ subject-list
     background-color: #54acde ;
     color: #fff ;
     height: 20px ;
-    border-radius: 20px ;
+    /* border-radius: 20px ; */
     padding: 2px 5px ;
-    margin: 0 5px ;
+    margin: 15px 0 0 30px ;
     display: block ;
-    float: right ;
+    float: none ;
     font-size: 0.9em ;
 }
 
+.subject-list-accordion .ne
+{
+    background-color: #54acde ;
+    color: #fff ;
+    height: 20px ;
+    border-radius: 20px ;
+    padding: 2px 5px ;
+    margin: 0 0 0 20px ;
+    float:none;
+}
 
 
 

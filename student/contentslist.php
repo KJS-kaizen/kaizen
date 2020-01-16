@@ -120,6 +120,9 @@ $contentsRecommendationList = [];   // contains only contents_id which should be
 $subCategoryRecommendationList = [];    // contains only subcategory_id(in csv format) (those subcategory id whose contents_id has been recommended)  
 $categoryRecommendationList = [];       // contains only category_id(in csv format) (those category id whose subcategorie's contents_id has been recommended)
 $subCategoryContentsCount=[];           // it is an assosiative array which represents that which subcategory has how many recommended contents
+$recommendationTree = [];               // it is an associative array which represents the whole tree of recommended videos
+$catList = [];              // it is an list for recommended category (it is made as a solution for multiple language)
+$subCatList = [];           // it is an list for recommended subcategory (it is made as a solution for multiple language)
 // $servername = "localhost";
 // $username = "root";
 // $password = "";
@@ -129,41 +132,68 @@ include('../news/includes/config.php');
 // if ($con->connect_error) {
 //     die("Connection failed: " . $con->connect_error);
 // }
-$sql = "SELECT cl2.contents_id ,cl1.answer_id
-FROM (SELECT quiz_id,query_id,answer_id FROM tbl_quiz_answer_query WHERE answer_id IN (SELECT t1.answer_id FROM (SELECT m1.* FROM (SELECT * FROM tbl_quiz_answer WHERE student_id = ".$student_id.") m1 left JOIN (SELECT * FROM tbl_quiz_answer WHERE student_id = ".$student_id.") m2 ON m1.quiz_id=m2.quiz_id AND m1.register_datetime < m2.register_datetime WHERE m2.register_datetime IS NULL) t1 INNER JOIN tbl_quiz t2 ON ( t1.quiz_id=t2.quiz_id AND t2.enable=1)) AND flg_right = 0) cl1 
+$sql = "SELECT t_1_0.contents_id
+FROM 
+	(SELECT cl2.contents_id ,cl1.answer_id
+	 FROM 
+		(SELECT quiz_id,query_id,answer_id 
+			FROM tbl_quiz_answer_query 
+			WHERE answer_id IN 
+			(SELECT t1.answer_id 
+			 FROM (SELECT m1.* FROM (SELECT * FROM tbl_quiz_answer WHERE student_id = ".$student_id.") m1 
+					left JOIN 
+					(SELECT * FROM tbl_quiz_answer WHERE student_id = ".$student_id.") m2 
+					ON m1.quiz_id=m2.quiz_id AND m1.register_datetime < m2.register_datetime WHERE m2.register_datetime IS NULL) t1 
+						INNER JOIN 
+					tbl_quiz t2 
+					ON ( t1.quiz_id=t2.quiz_id AND t2.enable=1)) AND flg_right = 0) cl1 
+	
+		INNER JOIN 
+			tbl_quiz_contents_mapping cl2 
+	ON (cl1.quiz_id=cl2.quiz_id AND cl1.query_id= cl2.query_id AND cl2.enable=1)) AS t_1_0
+INNER JOIN
+	tbl_contents AS t_1_1
+ON (t_1_0.contents_id = t_1_1.contents_id AND t_1_1.enable=1)
 
-INNER JOIN tbl_quiz_contents_mapping cl2 
-ON (cl1.quiz_id=cl2.quiz_id AND cl1.query_id= cl2.query_id) 
-WHERE cl2.contents_id 
+WHERE t_1_0.contents_id
 NOT IN 
 (
-	(SELECT ik1.contents_id from
-	(SELECT MAX(lt1.registered_datetime) AS contents_last_watch_time,lt1.school_contents_id AS contents_id,lt1.answer_id from
-	(SELECT ht.registered_datetime,ht.school_contents_id,sb.answer_id 
-	FROM 
-		(SELECT cl2.contents_id,cl1.answer_id
-		FROM (SELECT quiz_id,query_id,answer_id FROM tbl_quiz_answer_query WHERE answer_id IN 
-		(SELECT t1.answer_id FROM 
-			(SELECT m1.* FROM (SELECT * FROM tbl_quiz_answer WHERE student_id = ".$student_id.") m1 
-			left JOIN 
-			(SELECT * FROM tbl_quiz_answer WHERE student_id = ".$student_id.") m2 
-			ON m1.quiz_id=m2.quiz_id AND m1.register_datetime < m2.register_datetime WHERE m2.register_datetime IS NULL) t1 
-		INNER JOIN tbl_quiz t2 ON ( t1.quiz_id=t2.quiz_id AND t2.enable=1)) AND flg_right = 0) cl1 
-		
-		INNER JOIN tbl_quiz_contents_mapping cl2 
-		ON (cl1.quiz_id=cl2.quiz_id AND cl1.query_id= cl2.query_id)) as sb
-			INNER JOIN
-		log_contents_history_student AS ht
-		ON sb.contents_id=ht.school_contents_id AND ht.student_id=".$student_id.") lt1 
-		
-		GROUP BY lt1.school_contents_id) ik1
+	SELECT t_2_0.contents_id
+	FROM
+		(SELECT ik1.contents_id
+		 from
+			(SELECT MAX(lt1.registered_datetime) AS contents_last_watch_time,lt1.school_contents_id AS contents_id,lt1.answer_id 
+			from
+				(SELECT ht.registered_datetime,ht.school_contents_id,sb.answer_id 
+				FROM 
+					(SELECT cl2.contents_id,cl1.answer_id
+					FROM (SELECT quiz_id,query_id,answer_id FROM tbl_quiz_answer_query WHERE answer_id IN 
+					(SELECT t1.answer_id FROM 
+						(SELECT m1.* FROM (SELECT * FROM tbl_quiz_answer WHERE student_id = ".$student_id.") m1 
+						left JOIN 
+						(SELECT * FROM tbl_quiz_answer WHERE student_id = ".$student_id.") m2 
+						ON m1.quiz_id=m2.quiz_id AND m1.register_datetime < m2.register_datetime WHERE m2.register_datetime IS NULL) t1 
+					INNER JOIN tbl_quiz t2 ON ( t1.quiz_id=t2.quiz_id AND t2.enable=1)) AND flg_right = 0) cl1 
+					
+					INNER JOIN tbl_quiz_contents_mapping cl2 
+					ON (cl1.quiz_id=cl2.quiz_id AND cl1.query_id= cl2.query_id AND cl2.enable=1)) as sb
+						INNER JOIN
+					log_contents_history_student AS ht
+					ON sb.contents_id=ht.school_contents_id AND ht.student_id=".$student_id.") lt1 
+					
+					GROUP BY lt1.school_contents_id) ik1
+			
+			INNER join
+			
+				tbl_quiz_answer ik2
+			
+			ON ik1.answer_id = ik2.answer_id AND ik2.register_datetime < ik1.contents_last_watch_time) AS t_2_0
 		
 		INNER join
 		
-		tbl_quiz_answer ik2
+		tbl_contents AS t_2_1
 		
-		ON ik1.answer_id = ik2.answer_id AND ik2.register_datetime < ik1.contents_last_watch_time)
-
+		ON t_2_1.enable=1 AND t_2_0.contents_id=t_2_1.contents_id
 );";
 //echo($sql);
 $result = $con->query($sql);
@@ -191,10 +221,31 @@ if ($result->num_rows > 0) {
            {
                array_push($categoryRecommendationList,$csvRowC[$tmp]);  // inserting category id in $categoryRecommendationList
            }
+           if(!isset($_GLOBALS['$tmpTree'][$csvRowC[$tmp]][$tmp]))                              // making the whole recommendation tree
+           {
+               $_GLOBALS['$tmpTree'][$csvRowC[$tmp]][$tmp]=array();
+               array_push($_GLOBALS['$tmpTree'][$csvRowC[$tmp]][$tmp],$row["contents_id"]);
+           }
+           else
+           {
+               array_push($_GLOBALS['$tmpTree'][$csvRowC[$tmp]][$tmp],$row["contents_id"]);
+           }
        }
     }
 }
-
+$recommendationTree = $_GLOBALS['$tmpTree'];
+unset($_GLOBALS['$tmpTree']);
+foreach($recommendationTree as $key1=>$value1)
+{
+    foreach($value1 as $key2=>$value2)
+    {
+        if(count($value2) == 2)
+        {
+            in_array($key1,$catList)? :array_push($catList,$key1);
+            in_array($key2,$subCatList)? :array_push($subCatList,$key2);
+        }
+    }
+}
 // print_r($contentsRecommendationList);
 // echo("<br>");
 // print_r($subCategoryRecommendationList);
@@ -518,9 +569,9 @@ function size_format($size) {
                         <li class="active">
                             <a href="contentslist.php"><span>Taking lectures</span></a>
                         </li>
-                        <li>
+                        <!-- <li>
                             <a href="message/message_list.php?p=1"><span>message</span></a>
-                        </li>
+                        </li> -->
                     </ul>
                 </nav>
             </div>
@@ -587,7 +638,7 @@ for($current = count($csvMenu); $current >= 1; $current --) {
 						${'menu' . $current}[$key] .= ' class="open"';
 						$subject_genre_name = $csvName[$line];
                     }
-                    $parentLabel = (in_array($line,$categoryRecommendationList)) ? '<span class="recommend">Recommend('.count($subCategoryRecommendationList).')</span>':"";
+                    $parentLabel = (in_array($line,$catList)) ? '<span class="recommend">Recommend('.count($subCatList).')</span>':"";
                     ${'menu' . $current}[$key] .= '>' . "\n" .'<a class="togglebtn">' . $csvName[$line] .$parentLabel. '</a>' . "\n";
 					${'menu' . $current}[$key] .= ${'menu' . ($current + 1)}[$line] .'</li>' . "\n"; //子項目を挿入 Insert child item
 				}
@@ -621,7 +672,7 @@ for($current = count($csvMenu); $current >= 1; $current --) {
                             ${'menu' . $current}[$key] .= ' class="active"';
                             $subject_section_name = $csvName[$line];
                         }
-                        $childLabel = (in_array($line,$subCategoryRecommendationList)) ? "<span class='new'>Recommend</span>":""; /* For Recommendation */
+                        $childLabel = (in_array($line,$subCatList)) ? "<span class='new'>Recommend</span>":""; /* For Recommendation */
                         ${'menu' . $current}[$key] .= '><a href="' . $_SERVER['SCRIPT_NAME'] . '?bid=' . $line . '">' . $csvName[$line] . $childLabel .'</a></li>' . "\n";
                      }
                 //}

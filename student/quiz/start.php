@@ -138,8 +138,8 @@ if (filter_input(INPUT_POST, 'submit') == 'start') {
                     <ul>
                         <li><a href="../info.php"><span>TOP</span></a></li>
                         <li class="active"><a href="../contentslist.php"><span>Taking lectures</span></a>
-                        </li>
-                        <li><a href="message_list.php?p=1"><span>message</span></a></li>
+                        <!-- </li>
+                        <li><a href="message_list.php?p=1"><span>message</span></a></li> -->
                     </ul>
                 </nav>
             </div>

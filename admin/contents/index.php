@@ -32,6 +32,10 @@ if (isset($_SESSION['auth']['school_id'])) {
     $school_id = $_SESSION['auth']['school_id'];
 }
 
+/* For Recommendation */
+include('../../news/includes/config.php');
+/* For Recommendation */
+
 //------CSV読込部分 ここから------
 error_reporting(~E_NOTICE);
 $path = '../../library/category/'; //カテゴリーPHPライブラリの場所（※必須）
@@ -76,6 +80,9 @@ if (filter_input(INPUT_POST, "delete_flag" )) {
     //コンテンツ (tbl_contents)
     if(filter_input(INPUT_POST, "type" ) == 0) {
         $adminInfo->setContents($data, 'delete');
+        // I think mapping deletion code will be written here
+        $sql = "update tbl_quiz_contents_mapping set enable=0 where contents_id = ".$data['primary_id'];
+        $disablingToDb = $con->query($sql);
     //アンケート (tbl_questionnaire)
     } else if(filter_input(INPUT_POST, "type" ) == 1) {
         $adminInfo->setQuestionnaire($data, 'delete');
@@ -84,7 +91,10 @@ if (filter_input(INPUT_POST, "delete_flag" )) {
         $adminInfo->setQuestionnaire($data, 'delete');
     //クイズ (tbl_quiz)
     } else if(filter_input(INPUT_POST, "type" ) == 3) {
-        $adminInfo->setQuiz($data, 'delete');
+        $adminInfo->setQuiz($data, 'delete');                       
+        // I think mapping deletion code will be written here
+        $sql = "update tbl_quiz_contents_mapping set enable=0 where quiz_id = ".$data['primary_id'];
+        $disablingToDb = $con->query($sql);
     }
 }
 
