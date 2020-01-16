@@ -97,22 +97,32 @@ if ('save' == filter_input(INPUT_POST, "submit")) {
 
     //Mapping will be inserted to db here (First delete all rows from db of this quiz and query then insert from session mapping to db then unset the session mapping )
     
+
     if(isset($_SESSION['mapping']))
     {
-        $sql = "delete from tbl_quiz_contents_mapping where quiz_id = ".$quiz_id;
-        $clearRelationFromDB = $con->query($sql);
-        if(isset($_SESSION['mapping']))
+        //deleting Redundent Rows From DB
+        foreach($_SESSION['mapping'][$quiz_id] as $key=>$value)
         {
-            foreach($_SESSION['mapping'][$quiz_id] as $key=>$value)
+            for($i=0;$i<count($value);$i++)
             {
-                for($i=0;$i<count($value);$i++)
-                {
-                    $sql="insert into tbl_quiz_contents_mapping values(".(int)$quiz_id.",".(int)$key.",".(int)$value[$i].")";
-                    $insertToDb = $con->query($sql);
-                }
+                $sql="delete from tbl_quiz_contents_mapping where quiz_id = ".(int)$quiz_id." and query_id=".(int)$key." and contents_id=".(int)$value[$i]." and enable = 1";
+                $deletingRedundentRowsFromDb = $con->query($sql);
+            }
+        }
+        //disabling previous relationships
+        $sql = "update tbl_quiz_contents_mapping set enable = 0 where quiz_id = ".$quiz_id;
+        $disablingPreviousRelationship = $con->query($sql);
+        //inserting new relationship
+        foreach($_SESSION['mapping'][$quiz_id] as $key=>$value)
+        {
+            for($i=0;$i<count($value);$i++)
+            {
+                $sql = "insert into tbl_quiz_contents_mapping values(".(int)$quiz_id.",".(int)$key.",".(int)$value[$i].",1)";
+                $insertingNewRelationshipToDb = $con->query($sql);
             }
         }
     }
+
     unset($_SESSION['mapping']);
     /* For Mapping */
     $result = $Quiz->updateQuizConfirm($quiz_id);
@@ -559,7 +569,7 @@ $selection_data = $QueryObj->getQuerySelection();
                                     }
                                     else
                                     {
-                                        $sql="SELECT contents_name FROM tbl_contents as t1 INNER JOIN tbl_quiz_contents_mapping AS t2 WHERE t1.contents_id=t2.contents_id AND t2.quiz_id=".$item['quiz_id']." AND t2.query_id=".$item['query_id'];
+                                        $sql="SELECT contents_name FROM tbl_contents as t1 INNER JOIN tbl_quiz_contents_mapping AS t2 WHERE t1.contents_id=t2.contents_id AND t2.quiz_id=".$item['quiz_id']." AND t2.query_id=".$item['query_id']." and t2.enable=1";
                                         $result = $con->query($sql);
                                         if ($result->num_rows > 0) {
                                             while($row = $result->fetch_assoc()) {

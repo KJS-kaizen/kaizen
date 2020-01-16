@@ -209,9 +209,9 @@ $quiz_data['correct_flg'] = 0;
                         <li class="active">
                         <a href="../contentslist.php?bid=<?php echo $bid; ?>"><span>Take lectures</span></a>
                         </li>
-                        <li>
+                        <!-- <li>
                             <a href="../message/message_list.php"><span>message</span></a>
-                        </li>
+                        </li> -->
                     </ul>
                 </nav>
             </div>

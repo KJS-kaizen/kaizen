@@ -194,7 +194,7 @@ if ($tableExistOrNot->num_rows > 0) {
     if(!isset($_SESSION['mapping'][$quiz_id]))
     {
         $arra = [];
-        $sql= "SELECT * FROM tbl_quiz_contents_mapping WHERE quiz_id = ".$quiz_id;
+        $sql= "SELECT * FROM tbl_quiz_contents_mapping WHERE quiz_id = ".$quiz_id." and enable=1";
         $result = $con->query($sql);
         if ($result->num_rows > 0)
         {
@@ -215,7 +215,7 @@ if ($tableExistOrNot->num_rows > 0) {
 }
 else
 {
-    $sql = "create table tbl_quiz_contents_mapping(quiz_id INT,query_id INT,contents_id int)";
+    $sql = "create table tbl_quiz_contents_mapping(quiz_id INT,query_id INT,contents_id int,enable int)";
     $tableCreation = $con->query($sql);
 }
 /*For mapping*/
