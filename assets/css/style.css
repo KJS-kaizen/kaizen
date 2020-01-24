@@ -1747,13 +1747,33 @@ a {
 
 
 /* Operation Test*/
-.custom-design
+.custom-input
 {
   border-color:#757575; 
-  font-size : 3rem;
+  font-size : 2.5rem;
 }
 
-.icon-color {
-  color: linear-gradient(45deg, #665fee 0%, #27c2de 100%);}
+.icon-color 
+{
+  color: linear-gradient(45deg, #665fee 0%, #27c2de 100%);
+}
+
+.btn-font
+  {
+    font-size : 2.5rem;
+  }
+
+  .custom-header
+  {
+    color: white;
+    background-color:#33b5e5; 
+    font-size : 2.5rem;
+  }
+
+  .custom-title
+  {
+    color:#6c757d;
+  }
+
 
 /*# sourceMappingURL=style.css.map */

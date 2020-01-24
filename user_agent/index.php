@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="../assets/css/bootstrap/bootstrap.css">
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/landing-2.css">
+    <link rel="stylesheet" href="../assets/fonts/fontawesome/css/font-awesome.min.css">
 </head>
 
 <body>
@@ -14,14 +15,16 @@
         <!-- Material form login -->
         <div class="card mt-sm-5">
 
-            <h3 class="card-header info-color white-text text-center py-5"
+            <h3 class="card-header custem-header info-color white-text text-center py-5"
                 style="color: white; background-color:#33b5e5;">
                 <strong>For the operation test of kaizen 2.0 learning platform</strong>
             </h3>
 
             <!--Card content-->
-            <div class="card-body px-lg-5 pt-0">
-
+            <div class="card-body px-lg-5 pt-0 mt-sm-5">
+            <div class="alert alert-danger" role="alert">
+	<strong>Oh snap!</strong> Change a few things up and try submitting again.
+</div>
                 <!-- Form -->
                 <form id="user_agent_form" action="thanks.php" onsubmit="return validation()" method="post"
                     class="text-center" style="color: #757575;" style="margin-top: 5% !important">
@@ -30,9 +33,9 @@
                         <!-- Company name -->
                         <div class="md-form">
                             <label>
-                                <h2><i class="fad fa-building fa-fw icon-color"></i> Company Name</h2>
+                                <h2><i class="fa fa-building pb_icon-gradient"></i> Company Name</h2>
                             </label>
-                            <input type="text" class="form-control custom-design" id="companyName"
+                            <input type="text" class="form-control custom-input" id="companyName"
                                 name="companyName" placeholder="Enter Your Company Name Here">
                         </div>
                     </p>
@@ -40,29 +43,26 @@
                     <!-- Internet speed -->
                     <div class="md-form">
                         <label>
-                          <h2><i class="fad fa-tachometer-alt fa-fw"></i>Internet Speed</h2>
+                          <h2><i class="fa fa-tachometer pb_icon-gradient"></i> Internet Speed</h2>
                           <div class="d-flex justify-content-around">
                               <div>
                                   <!-- link of internet speed  -->
-                                  <a href="http://fast.com" target="_blank"><h5><i class="fad fa-external-link-alt fa-fw"></i>Click here to find out your Internet speed</h5></a>
+                                  <a href="http://fast.com" target="_blank"><h4><i class="fa fa-external-link pb_icon-gradient"></i> Click here to find out your Internet speed</h4></a>
                               </div>
                           </div>
                         </label>
                         <div class="row">
                             <div class="col-sm-8">
-                                <input type="number" style="border-color:#757575" class="form-control"
+                                <input type="number" class="form-control custom-input"
                                     id="internetSpeed" name="internetSpeed"
                                     placeholder="Enter Your Internet Speed Here">
                             </div>
                             <p>
                                 <div class="col-sm-4">
-                                    <select class="custom-select" id="speedUnit" name="speedUnit"
-                                        style="border-color:#757575">
-                                        <option selected>Choose</option>
+                                    <select class="custom-select custom-input" id="speedUnit" name="speedUnit">
+                                        <option class="custom-title" selected>Choose</option>
                                         <option value="Kbps">Kbps</option>
                                         <option value="Mbps">Mbps</option>
-                                        <option value="Gbps">Gbps</option>
-                                        <option value="Tbps">Tbps</option>
                                     </select>
                                 </div>
                             </p>
@@ -70,8 +70,8 @@
                     </div><br>
 
                     <!-- Submit button -->
-                    <button class="btn btn-outline-info btn-rounded btn-block my-4 waves-effect z-depth-0" type="submit"
-                        id="register" value="Save" name="submit"><i class="fad fa-paper-plane fa-fw"></i> Submit</button>
+                    <button class="btn btn-outline-info btn-rounded btn-block btn-font my-4 waves-effect z-depth-0" type="submit"
+                        id="register" value="Save" name="submit"><i class="fa fa-paper-plane pb_icon-gradient"></i> Submit</button>
                 </form>
                 <!-- Warning message -->
                 <div class="alert alert-danger" style="display:none">
@@ -84,7 +84,7 @@
 
         <script src="../assets/js/jquery.min.js"></script>
         <script src="../assets/js/bootstrap.min.js"></script>
-        <script defer src="../assets/css/awesome.min.js"></script>
+        
         <script>
 
         $(document).on('click', "button.close", function(e) { // Actually live method is absolute for latest Jquery 
