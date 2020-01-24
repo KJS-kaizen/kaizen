@@ -15,8 +15,9 @@ if (isset($_POST['register'])) {
     $to1 = "arivu@e-kjs.jp";
     $subject = mb_encode_mimeheader("Thanks For Your Inquiry. Please do not reply to this E-mail, it is auto-generated");
     $subject1 = mb_encode_mimeheader("Kaizen2.0- New inquiry from the customer"); 
-    $headers = 'From: info@e-kjs.jp' . "\n";
-    $headers .= 'MIME-Version: 1.0' . "\n";
+    $headers_from = 'From: info@e-kjs.jp' . "\n";
+    //$headers = 'From: info@e-kjs.jp' . "\n";
+    $headers = 'MIME-Version: 1.0' . "\n";
     $headers .= 'Content-type: text/html; charset=UTF-8' . "\n";
     $message = "<html><body style=font-family:メイリオ leftmargin=10 topmargin=0 marginheight=0 marginwidth=0 height=100%>
                     <table width=100% margin=0>  <tbody>  <!---outer table -->
@@ -35,8 +36,9 @@ if (isset($_POST['register'])) {
                     </table>
                     </body>
                     </html>";
-    mail($to,$subject,$message, $headers);
+    mail($to,$subject,$message, $headers_from.$headers);
 
+    $headers_from = "From: $email ". "\n";
     $message1 = "<html><body style=font-family:メイリオ leftmargin=10 topmargin=0 marginheight=0 marginwidth=0 height=100%>
                     <table width=100% margin=0>  <tbody>  <!---outer table -->
                     <tr><td>Dear Kaizen2.0 Admin,</td></tr><br>
@@ -54,9 +56,10 @@ if (isset($_POST['register'])) {
                     </table>
                     </body>
                     </html>";
-    mail($to1,$subject1,$message1, $headers);
+    mail($to1,$subject1,$message1, $headers_from.$headers.$headers);
     session_destroy();
   }
+
 
   // セッションがあればメニューへ
   if (isset($_SESSION['auth']['student_id'])) {
@@ -110,6 +113,8 @@ if (isset($_POST['register'])) {
     <link rel="stylesheet" href="../../assets/css/style.css">
     <link rel="stylesheet" href="../../assets/css/landing-2.css">
     <link rel="stylesheet" href="../../assets/css/custom.css">
+    <link href="https://vjs.zencdn.net/7.6.6/video-js.css" rel="stylesheet" />
+    <script src="https://vjs.zencdn.net/ie8/1.1.2/videojs-ie8.min.js"></script>
     <script src="../js/alert.js"></script>
 </head>
 <body data-spy="scroll" data-target="#pb-navbar" data-offset="200">
@@ -181,8 +186,8 @@ if (isset($_POST['register'])) {
     <!--START Section -->
     <section class="pb_section bg-light pb_slant-white pb_pb-250" id="section-introduction">
         <div class="container">
-            <div class="row justify-content-center mb-2">
-                <div class="col-md-6 text-center mb-2">
+            <div class="row justify-content-center">
+                <div class="col-md-6 text-center">
                     <h2>What is Kaizen?</h2>
                     <br>
                 </div>
@@ -201,32 +206,29 @@ if (isset($_POST['register'])) {
                 <div class="col-lg-1">
                 </div>
                 <div class="col-lg-5 col-md-12 col-sm-12">
-                    <img data-toggle="modal" data-target="#homeVideo" class="img-fluid" alt="Image placeholder" src="../../assets/images/thumbnail.png" width="560" height="315" onclick="playVid()" />
-                    <div class="modal fade" id="homeVideo" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="pauseVid()">Close</button>
-                                <div class="embed-responsive embed-responsive-16by9">
-                                    <video id="gossVideo" class="embed-responsive-item" controls="controls" poster="https://www.gossettmktg.com/video/dangot.png">
-                                        <source src="../../assets/images/kaizen-sample.mp4" type="video/mp4">
-                                        <source src="../../assets/images/kaizen-sample.webm" type="video/webm">
-                                        <source src="../../assets/images/kaizen-sample.ogv" type="video/ogg">
-                                        <object type="application/x-shockwave-flash" data="https://releases.flowplayer.org/swf/flowplayer-3.2.1.swf" width="560" height="315">
-                                            <param name="movie" value="https://releases.flowplayer.org/swf/flowplayer-3.2.1.swf">
-                                            <param name="allowFullScreen" value="true">
-                                            <param name="wmode" value="transparent">
-                                            <param name="flashVars" value="config={'playlist':['http%3A%2F%2Fwww.gossettmktg.com%2Fvideo%2Fdangot.png',{'url':'http%3A%2F%2Fwww.gossettmktg.com%2Fvideo%2Fdangot.mp4','autoPlay':false}]}">
-                                            <img alt="Image placeholder" src="../../assets/images/thumbnail.png" class="img-fluid" title="No video playback capabilities, please download the video below">
-                                        </object>
-                                    </video>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                  </div>
-              </div>
+                    <!-- <video class="intro-video" width="560" height="315"  controls>
+                        <source src="../../assets/images/kaizen-sample.mp4" type="video/mp4">
+                        <source src="../../assets/images/kaizen-sample.ogg" type="video/ogg">
+                    </video> -->
+                    <video
+    id="my-video"
+    class="video-js vjs-default-skin vjs-big-play-centered"
+    controls
+    preload="auto"
+    width="450"
+    height="300"
+    data-setup='{ "playbackRates": [1, 1.5, 2] }'
+  >
+    <source src="../../assets/images/kaizen-intro.mp4" type="video/mp4" />
+    <source src="../../assets/images/kaizen-intro.webm" type="video/webm" />
+    
+  </video>
+                    <!-- <video controls src="../../assets/images/kaizen-sample.mp4" class="img-fluid" alt="Image placeholder" poster="../../assets/images/thumbnail.png" preload="none" width="560" height="315"> </video> -->
+                    <!-- <img class="img-fluid" alt="Image placeholder" src="../../assets/images/thumbnail.png" width="560" height="315" /> -->
+                </div>
+            </div>
         </div>
-      </section>
+    </section>
     <!-- END Section -->
 
 
@@ -329,28 +331,7 @@ if (isset($_POST['register'])) {
                 <div class="col-lg-1">
                 </div>
                 <div class="col-lg-5 col-md-12 col-sm-12">
-                    <img data-toggle="modal" data-target="#homeVideo" class="img-fluid" alt="Image placeholder" src="../../assets/images/thumbnail.png" width="560" height="315" onclick="playVid()" />
-                    <div class="modal fade" id="homeVideo" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="pauseVid()">Close</button>
-                                <div class="embed-responsive embed-responsive-16by9">
-                                    <video id="gossVideo" class="embed-responsive-item" controls="controls" poster="https://www.gossettmktg.com/video/dangot.png">
-                                        <source src="../../assets/images/video.mp4" type="video/mp4">
-                                        <source src="../../assets/images/video.webm" type="video/webm">
-                                        <source src="../../assets/images/video.ogv" type="video/ogg">
-                                        <object type="application/x-shockwave-flash" data="https://releases.flowplayer.org/swf/flowplayer-3.2.1.swf" width="560" height="315">
-                                            <param name="movie" value="https://releases.flowplayer.org/swf/flowplayer-3.2.1.swf">
-                                            <param name="allowFullScreen" value="true">
-                                            <param name="wmode" value="transparent">
-                                            <param name="flashVars" value="config={'playlist':['http%3A%2F%2Fwww.gossettmktg.com%2Fvideo%2Fdangot.png',{'url':'http%3A%2F%2Fwww.gossettmktg.com%2Fvideo%2Fdangot.mp4','autoPlay':false}]}">
-                                            <img alt="Image placeholder" src="../../assets/images/thumbnail.png" class="img-fluid" title="No video playback capabilities, please download the video below">
-                                        </object>
-                                    </video>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <video controls src="../../assets/images/kaizen-sample.mp4" class="img-fluid" alt="Image placeholder" poster="../../assets/images/thumbnail.png" preload="none" width="560" height="315"> </video>
                   </div>
               </div>
             </div>
@@ -561,7 +542,7 @@ if($findQuery['last_date']==$row['PostingDate'] &&  $interval->format('%a') < 30
 
     <script src="../../assets/js/jquery.waypoints.min.js"></script>
     <script src="../../assets/js/jquery.easing.1.3.js"></script>
-
+    <script src="https://vjs.zencdn.net/7.6.6/video.js"></script>
     <script src="../../assets/js/main.js"></script>
     <?php if (isset($_POST['register'])) { ?>
         <script>
