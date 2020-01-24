@@ -1738,5 +1738,22 @@ a {
 }
 
 
+/* Video */
+.intro-video
+{
+  max-width: 100%;
+  max-height: auto;
+}
+
+
+/* Operation Test*/
+.custom-design
+{
+  border-color:#757575; 
+  font-size : 3rem;
+}
+
+.icon-color {
+  color: linear-gradient(45deg, #665fee 0%, #27c2de 100%);}
 
 /*# sourceMappingURL=style.css.map */
