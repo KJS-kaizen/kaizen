@@ -1751,6 +1751,7 @@ a {
 {
   border-color:#757575; 
   font-size : 2.5rem;
+  border: 3px solid #373e45;
 }
 
 .icon-color 
@@ -1763,6 +1764,11 @@ a {
     font-size : 2.5rem;
   }
 
+  .par-font
+  {
+    font-size : 1.4rem;
+  }
+
   .custom-header
   {
     color: white;
@@ -1773,6 +1779,11 @@ a {
   .custom-title
   {
     color:#6c757d;
+  }
+
+  .alert-font
+  {
+    font-size : 2rem;
   }
 
 
