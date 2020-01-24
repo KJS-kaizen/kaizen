@@ -556,9 +556,9 @@ $selection_data = $QueryObj->getQuerySelection();
                                             if ($result->num_rows > 0) {
                                                 while($row = $result->fetch_assoc()) {
                                                     if($mappingFiles=="")
-                                                        $mappingFiles=$mappingFiles.$row['contents_name'];
+                                                        $mappingFiles=$mappingFiles."[".$row['contents_name']."]";
                                                     else
-                                                        $mappingFiles=$mappingFiles." and ".$row['contents_name'];
+                                                        $mappingFiles=$mappingFiles." and "."[".$row['contents_name']."]";
                                                 }
                                             }
                                         }
@@ -574,9 +574,9 @@ $selection_data = $QueryObj->getQuerySelection();
                                         if ($result->num_rows > 0) {
                                             while($row = $result->fetch_assoc()) {
                                                 if($mappingFiles=="")
-                                                    $mappingFiles=$mappingFiles.$row['contents_name'];
+                                                    $mappingFiles=$mappingFiles."[".$row['contents_name']."]";
                                                 else
-                                                    $mappingFiles=$mappingFiles." and ".$row['contents_name'];
+                                                    $mappingFiles=$mappingFiles." and "."[".$row['contents_name']."]";
                                             }
                                         }
                                         else

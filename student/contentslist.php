@@ -233,8 +233,11 @@ if ($result->num_rows > 0) {
        }
     }
 }
-$recommendationTree = $_GLOBALS['$tmpTree'];
-unset($_GLOBALS['$tmpTree']);
+if(isset($_GLOBALS['$tmpTree']))
+{
+    $recommendationTree = $_GLOBALS['$tmpTree'];
+    unset($_GLOBALS['$tmpTree']);
+}
 foreach($recommendationTree as $key1=>$value1)
 {
     foreach($value1 as $key2=>$value2)
@@ -512,7 +515,8 @@ function size_format($size) {
 	<link rel="stylesheet" type="text/css" href="css/bootstrap.css">
 	<link rel="stylesheet" type="text/css" href="css/bootstrap-reboot.css">
 	<link rel="stylesheet" type="text/css" href="css/icon-font.css">
-	<link rel="stylesheet" type="text/css" href="css/common.css">
+    <link rel="stylesheet" type="text/css" href="css/common.css">
+    
   <!--<link rel="stylesheet" href="./css/sweetalert-master/dist/sweetalert.css">-->
     <link rel="stylesheet" type="text/css" href="css/contents.css">
     <!-- js -->

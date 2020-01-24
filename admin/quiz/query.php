@@ -143,30 +143,56 @@ include('../../news/includes/config.php');
 
 // print_r($contents_idToDisplay);
 // print_r($contnents_nameToDisplay);
-$subCategoryList=[];
+$allContentsList=[];
 $parentID=$csvRowC[$bid];
-for($i=0;$i<count($csvTree[2][$parentID]);$i++)
+for($i=0;$i<count($csvTree[1][null]);$i++)
 {
-    if($csvTree[2][$parentID][$i] != $bid)
+    $m = csvToDbConverter($csvTree[1][null][$i]);
+    $allContentsList[$m]["self_name"]=$csvRowD[$csvTree[1][null][$i]];
+    for($j = 0; $j<count($csvTree[2][$csvTree[1][null][$i]]); $j++)
     {
-        $t = csvToDbConverter($csvTree[2][$parentID][$i]);
-        $subCategoryList[$t]["contents_id"]=[];
-        $subCategoryList[$t]["contents_name"]=[];
-        $subCategoryList[$t]["self_name"]=$csvRowD[$csvTree[2][$parentID][$i]];
-    }
-    
-}
-foreach($subCategoryList as $key=>$val)
-{
-    $sql = "SELECT contents_id,contents_name FROM tbl_contents WHERE school_id = (SELECT school_id FROM tbl_admin WHERE admin_id = ".$isManager.") AND enable = 1 AND bit_classroom = '".$key."';";
-    $result = $con->query($sql);
-    if ($result->num_rows > 0) {
-        while($row = $result->fetch_assoc()) {
-        array_push($subCategoryList[$key]["contents_id"],$row["contents_id"]);
-        array_push($subCategoryList[$key]["contents_name"],$row["contents_name"]);
+        $t = csvToDbConverter($csvTree[2][$csvTree[1][null][$i]][$j]);
+        $allContentsList[$m][$t]["contents_id"] = [];
+        $allContentsList[$m][$t]["contents_name"] = [];
+        $allContentsList[$m][$t]["self_name"] = $csvRowD[$csvTree[2][$csvTree[1][null][$i]][$j]];
+        $sql = "SELECT contents_id,contents_name FROM tbl_contents WHERE school_id = (SELECT school_id FROM tbl_admin WHERE admin_id = ".$isManager.") AND enable = 1 AND bit_classroom = '".$t."';";
+        $result = $con->query($sql);
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+            array_push($allContentsList[$m][$t]["contents_id"],$row["contents_id"]);
+            array_push($allContentsList[$m][$t]["contents_name"],$row["contents_name"]);
+            }
+        }
+        else
+        {
+            unset($allContentsList[$m][$t]);
         }
     }
 }
+
+// $subCategoryList=[];
+// for($i=0;$i<count($csvTree[2][$parentID]);$i++)
+// {
+//     //if($csvTree[2][$parentID][$i] != $bid)
+//     {
+//         $t = csvToDbConverter($csvTree[2][$parentID][$i]);
+//         $subCategoryList[$t]["contents_id"]=[];
+//         $subCategoryList[$t]["contents_name"]=[];
+//         $subCategoryList[$t]["self_name"]=$csvRowD[$csvTree[2][$parentID][$i]];
+//     }
+    
+// }
+// foreach($subCategoryList as $key=>$val)
+// {
+//     $sql = "SELECT contents_id,contents_name FROM tbl_contents WHERE school_id = (SELECT school_id FROM tbl_admin WHERE admin_id = ".$isManager.") AND enable = 1 AND bit_classroom = '".$key."';";
+//     $result = $con->query($sql);
+//     if ($result->num_rows > 0) {
+//         while($row = $result->fetch_assoc()) {
+//         array_push($subCategoryList[$key]["contents_id"],$row["contents_id"]);
+//         array_push($subCategoryList[$key]["contents_name"],$row["contents_name"]);
+//         }
+//     }
+// }
 
 $sql = "SHOW tables LIKE 'tbl_quiz_contents_mapping'";
 $tableExistOrNot = $con->query($sql);
@@ -943,35 +969,100 @@ img {
                                 <dt><br><table class="select-answer">
                                <thead>
                                <tr>
-                                   <th class="correct">Select the lesson from which the question actually belongs</th>
+                                   <th class="correct">Select the category from which this question actually belongs</th>
                                 </tr>
                                </thead>
                                 </table></dt>
                                 <dd>
                                     <?php 
                                         echo "<br>";
-                                        foreach($subCategoryList as $key=>$value)
+                                        foreach($allContentsList as $key1=>$value1)
                                         {
-                                            
-                                            echo("<p> FROM the contents of <b>'".$subCategoryList[$key]["self_name"]."'</b> of <b>'".$csvRowD[$parentID]."'</b>:- </p><br/>");
-                                            for($i=0;$i<count($value["contents_name"]);$i++)
+                                            if(is_array($value1))
                                             {
-                                                $checkedOrNot="";
-                                                // if(in_array($value["contents_id"][$i],$alreadyExistingConnection))
-                                                // {
-                                                //     $checkedOrNot = "checked=checked";
-                                                // }
-                                                if(isset($_SESSION['mapping'][$quiz_id][$query_id]))
+                                                echo('<div class="box-accordion">
+                                                <p class="title clearfix"><span>'.$allContentsList[$key1]["self_name"].'</span></p>
+                                                <div class="in">
+                                                    <button class="navbar-toggler collapsed query-edit" type="button" data-toggle="collapse" data-target="#contentsBlock'.$key1.'" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">Add</button>
+                                                    <div class="contents navbar-collapse collapse" id="contentsBlock'.$key1.'">
+                                                    <div class="w-100">
+                                                        <dl>
+                                                            <dt><br><table class="select-answer">
+                                                        <thead>
+                                                        <tr>
+                                                            <th class="correct">Select subcategory from category ['.$allContentsList[$key1]["self_name"].']</th>
+                                                            </tr>
+                                                        </thead>
+                                                            </table></dt>
+                                                            <dd>');
+                                                foreach($value1 as $key2=>$value2)
                                                 {
-                                                    if(in_array($value["contents_id"][$i],$_SESSION['mapping'][$quiz_id][$query_id]))
+                                                    if(is_array($value2))
                                                     {
-                                                        $checkedOrNot = "checked=checked";
+                                                        echo('<div class="box-accordion">
+                                                        <p class="title clearfix"><span>'.$allContentsList[$key1][$key2]["self_name"].'</span></p>
+                                                        <div class="in">
+                                                            <button class="navbar-toggler collapsed query-edit" type="button" data-toggle="collapse" data-target="#contentsBlock'.$key2.'" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">Add</button>
+                                                            <div class="contents navbar-collapse collapse" id="contentsBlock'.$key2.'">
+                                                            <div class="w-100">
+                                                                <dl>
+                                                                    <dt><br><table class="select-answer">
+                                                                <thead>
+                                                                <tr>
+                                                                    <th class="correct">Select contents from subcategory ['.$allContentsList[$key1][$key2]["self_name"].']</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                    </table></dt>
+                                                                    <dd>');
+
+                                                        //echo("<p> The contents of subcategory <b>'".$allContentsList[$key1][$key2]["self_name"]."'</b> from category <b>'".$allContentsList[$key1]["self_name"]."'</b>:- </p><br/>");
+                                                        //echo('</br><p> Available contents from:-</p></br><p>Subcategory ['.$allContentsList[$key1][$key2]["self_name"].'] of </p></br><p>Category ['.$allContentsList[$key1]["self_name"].']</p></br>');
+                                                        for($i=0;$i<count($value2["contents_name"]);$i++)
+                                                        {
+                                                            $checkedOrNot="";
+                                                            // if(in_array($value["contents_id"][$i],$alreadyExistingConnection))
+                                                            // {
+                                                            //     $checkedOrNot = "checked=checked";
+                                                            // }
+                                                            if(isset($_SESSION['mapping'][$quiz_id][$query_id]))
+                                                            {
+                                                                if(in_array($value2["contents_id"][$i],$_SESSION['mapping'][$quiz_id][$query_id]))
+                                                                {
+                                                                    $checkedOrNot = "checked=checked";
+                                                                }
+                                                            }
+                                                            echo('<label class="customcheck"><input type="checkbox"  name="check_list[]" value="'.$value2["contents_id"][$i].'" '.$checkedOrNot.'> '.$value2["contents_name"][$i].'<span class="checkmark"></span></label><p></p>') ;                                                
+                                                        }                                                
+                                                        echo("<br>");
+
+                                                        echo('</dd></dl></div></div></div></div>'); 
                                                     }
-                                                }
-                                                echo('<label class="customcheck"><input type="checkbox"  name="check_list[]" value="'.$value["contents_id"][$i].'" '.$checkedOrNot.'> '.$value["contents_name"][$i].'<span class="checkmark"></span></label><p></p>') ;                                                
-                                            }                                                
-                                            echo("<br>");
+                                                } 
+                                                echo('</dd></dl></div></div></div></div>');  
+                                            }
                                         }
+                                        // foreach($subCategoryList as $key=>$value)
+                                        // {
+                                            
+                                        //     echo("<p> FROM the contents of <b>'".$subCategoryList[$key]["self_name"]."'</b> of <b>'".$csvRowD[$parentID]."'</b>:- </p><br/>");
+                                        //     for($i=0;$i<count($value["contents_name"]);$i++)
+                                        //     {
+                                        //         $checkedOrNot="";
+                                        //         // if(in_array($value["contents_id"][$i],$alreadyExistingConnection))
+                                        //         // {
+                                        //         //     $checkedOrNot = "checked=checked";
+                                        //         // }
+                                        //         if(isset($_SESSION['mapping'][$quiz_id][$query_id]))
+                                        //         {
+                                        //             if(in_array($value["contents_id"][$i],$_SESSION['mapping'][$quiz_id][$query_id]))
+                                        //             {
+                                        //                 $checkedOrNot = "checked=checked";
+                                        //             }
+                                        //         }
+                                        //         echo('<label class="customcheck"><input type="checkbox"  name="check_list[]" value="'.$value["contents_id"][$i].'" '.$checkedOrNot.'> '.$value["contents_name"][$i].'<span class="checkmark"></span></label><p></p>') ;                                                
+                                        //     }                                                
+                                        //     echo("<br>");
+                                        // }
                                     ?>
                                 </dd>
                                 
