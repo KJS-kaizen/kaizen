@@ -3,3 +3,5 @@
 カテゴリー,value値,親カテゴリー,項目名,関連付け
 1,1-0x1,,Workers,
 2,1-0x2,1-0x1,Factory Workers,
+1,1-0x4,,sample contents,
+2,1-0x8,1-0x4,World bank officers,
