@@ -135,8 +135,8 @@ subject-list
 .subject-list-accordion .recommend {
     background-color: #d64242 ;
     color: #fff ;
-    height: 20px ;
-    border-radius: 20px ;
+    height: 15px ;
+    border-radius: 10px ;
     padding: 2px 5px ;
     margin: 0 5px ;
     display: block ;
@@ -145,14 +145,16 @@ subject-list
 }
 
 .subject-list-accordion .new {
-    background-color: #54acde ;
+    /*background-color: #54acde ;*/
     color: #fff ;
-    height: 20px ;
-    border-radius: 20px ;
+    background-color: #d64242 ;
+    /*color: blue;*/
+    height: 15px ;
+    border-radius: 8px ;
     padding: 2px 5px ;
     margin: 0 5px ;
     display: block ;
-    float: right ;
+    float: left ;
     font-size: 0.9em ;
 }
 

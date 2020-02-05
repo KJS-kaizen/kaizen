@@ -676,8 +676,9 @@ for($current = count($csvMenu); $current >= 1; $current --) {
                             ${'menu' . $current}[$key] .= ' class="active"';
                             $subject_section_name = $csvName[$line];
                         }
-                        $childLabel = (in_array($line,$subCatList)) ? "<span class='new'>Recommend</span>":""; /* For Recommendation */
-                        ${'menu' . $current}[$key] .= '><a href="' . $_SERVER['SCRIPT_NAME'] . '?bid=' . $line . '">' . $csvName[$line] . $childLabel .'</a></li>' . "\n";
+                        $childLabel = (in_array($line,$subCatList)) ? "<span class='new'>Re</span>":""; /* For Recommendation */
+                        //$colorForchild = (in_array($line,$subCatList)) ? 'style="color:blue;"':""; /* For Recommendation */
+                        ${'menu' . $current}[$key] .= '><a href="' . $_SERVER['SCRIPT_NAME'] . '?bid=' . $line . '">' . $childLabel . $csvName[$line] .'</a></li>' . "\n";
                      }
                 //}
 			}
