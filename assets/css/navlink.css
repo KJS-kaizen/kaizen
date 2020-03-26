@@ -1,0 +1,154 @@
+
+.wrapper {
+  background: white;
+  margin: auto;
+  padding: 1em;
+  width: 100%;
+  display:flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 2rem 2rem #00000080;
+}
+
+ul.tabs {
+  list-style-type: none;
+  margin: 0;
+  padding-left: 0 ;
+
+}
+ul.tabs li {
+  border-bottom: none;
+  margin: 0 .25em 0 0;
+  padding: .5em .5em;
+}
+
+ul.tabs li a {
+  cursor: pointer;
+  margin: 0px 0px;
+  padding:20px ;
+  text-align: center;
+  width : 100%;
+  display:inline-block;
+  color:#fff;
+  border-radius:3px 3px 0px 0px;
+  -webkit-box-shadow: 1px 11px 68px -20px rgba(0, 0, 0, 0.75);
+  -moz-box-shadow: 1px 11px 68px -20px rgba(0, 0, 0, 0.75);
+  box-shadow: 1px 11px 68px -20px rgba(0, 0, 0, 0.75); 
+}
+/* 
+@media only screen  and (min-width : 1224px)  {
+  ul.tabs li a {
+    
+  }
+}
+@media only screen and (min-device-width : 768px) and (max-device-width : 1024px) and (orientation : landscape) {
+  ul.tabs li a {
+    padding:15px 15px;
+  }
+} */
+
+
+
+/* ul.tabs li.active {
+ ;
+} */
+ul.tabs li.active a {
+  color: #404041;
+  background: white;
+  
+}
+.clr {
+  clear: both;
+}
+article {
+  margin-top: 10px;
+  /* border-top: gray solid 1px; */
+  padding: 0 1em;
+}
+
+.nav-title {
+  line-height:28.48px;
+  font-size: 22px;
+  color: #000;
+  font-weight: 600;
+  font-family: 'Roboto', sans-serif;
+}
+
+
+@media (max-width: 767px){
+  
+  .nav-title
+{
+  height: 95px;
+  font-size: 14px;
+}
+  
+ul.tabs .col-4:nth-child(2) li a,
+ul.tabs .col-4:nth-child(3) li a
+ {
+   padding-top: 30px;
+}
+}
+
+
+.nav-subtitle {
+  margin-left: 5px;
+  line-height:28.48px;
+  font-size: 22px;
+  color: #000;
+  font-weight: 600;
+  font-family: 'Roboto', sans-serif;
+}
+
+.bg-color1
+{
+  background:#27A9E1;
+}
+
+
+.nav-expl{
+  margin: 20px 5px 20px 5px;
+  line-height:28.48px;
+  font-size: 20px;
+  color: #000;
+  font-weight: 400;
+  font-family: 'Poppins', sans-serif;
+}
+
+.nav-expl .col-blue
+{
+  font-size: 22px;
+  color: #1d82ff;
+}
+
+.pb_icon-gradient {
+  background: #665fee;
+  /* Old browsers */
+  background: -moz-linear-gradient(45deg, #665fee 0%, #27c2de 100%);
+  /* FF3.6-15 */
+  background: -webkit-linear-gradient(45deg, #665fee 0%, #27c2de 100%);
+  /* Chrome10-25,Safari5.1-6 */
+  background: -o-linear-gradient(45deg, #665fee 0%, #27c2de 100%);
+  background: linear-gradient(45deg, #665fee 0%, #27c2de 100%);
+  /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent; }
+
+
+.video-center {
+    margin: 0 auto; 
+    width: 400px;
+    height:225px;
+    border: 1px solid #000000;
+}
+
+
+
+@media (max-width: 767px){
+  
+.video-center
+{
+  width: 300px;
+  height: 170px;
+}
+}

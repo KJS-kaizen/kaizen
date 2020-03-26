@@ -1,6 +1,5 @@
-<?php
-error_reporting(0);
-include('../../news/includes/config.php');
+<?php error_reporting(0); 
+include( '../../news/includes/config.php'); 
 require_once "../../config.php";
 $call_sign = "kai";
 
@@ -12,7 +11,7 @@ if (isset($_POST['register'])) {
     $enquiery=$_POST['enquiery'];
 
     $to = "$email";
-    $to1 = "arivu@e-kjs.jp";
+    $to1 = "info@e-kjs.jp";
     $subject = mb_encode_mimeheader("Thanks For Your Inquiry. Please do not reply to this E-mail, it is auto-generated");
     $subject1 = mb_encode_mimeheader("Kaizen2.0- New inquiry from the customer"); 
     $headers_from = 'From: info@e-kjs.jp' . "\n";
@@ -91,81 +90,101 @@ if (isset($_POST['register'])) {
       }
   }
 
-  
+
 
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="no-js">
+
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Kaizen2.0</title>
-    <meta name="description" content="Microlearning Project">
-    <meta name="keywords" content="Microlearning Project">
-    <link href="https://fonts.googleapis.com/css?family=Crimson+Text:400,400i,600|Montserrat:200,300,400" rel="stylesheet">
-    <link rel="stylesheet" href="../../assets/css/bootstrap/bootstrap.css">
-    <link rel="stylesheet" href="../../assets/fonts/ionicons/css/ionicons.min.css">
-    <link rel="stylesheet" href="../../assets/fonts/law-icons/font/flaticon.css">
-    <link rel="stylesheet" href="../../assets/fonts/fontawesome/css/font-awesome.min.css">
-    <link rel="stylesheet" href="../../assets/css/slick.css">
-    <link rel="stylesheet" href="../../assets/css/slick-theme.css">
-    <link rel="stylesheet" href="../../assets/css/helpers.css">
-    <link rel="stylesheet" href="../../assets/css/style.css">
-    <link rel="stylesheet" href="../../assets/css/landing-2.css">
-    <link rel="stylesheet" href="../../assets/css/custom.css">
-    <link href="https://vjs.zencdn.net/7.6.6/video-js.css" rel="stylesheet" />
-    <script src="https://vjs.zencdn.net/ie8/1.1.2/videojs-ie8.min.js"></script>
-    <script src="../js/alert.js"></script>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Kaizen2.0</title>
+	<meta name="description" content="" />
+	<meta name="keywords" content="" />
+	<meta name="author" content="Themesbrand" />
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<!-- Bootstrap core CSS -->
+	<link rel="stylesheet" href="../../assets/css/bootstrap.css" type="text/css">
+	<!-- Icon -->
+	<link rel="stylesheet" type="text/css" href="../../assets/css/themify-icons.css" />
+	<link rel="stylesheet" type="text/css" href="../../assets/fonts/fontawesome/css/font-awesome.min.css" />
+	<!--Slider-->
+	<link rel="stylesheet" href="../../assets/css/owl.carousel.css" />
+	<link rel="stylesheet" href="../../assets/css/owl.theme.css" />
+	<link rel="stylesheet" href="../../assets/css/owl.transitions.css" />
+	<!-- Custom  Css -->
+	<link rel="stylesheet" type="text/css" href="../../assets/css/style.css" />
+	<link rel="stylesheet" type="text/css" href="../../assets/css/custom.css" />
+	<link rel="stylesheet" type="text/css" href="../../assets/css/colors/pink.css" />
+	<link rel="stylesheet" type="text/css" href="../../assets/css/navlink.css" />
+	<link href="https://vjs.zencdn.net/7.6.6/video-js.css" rel="stylesheet" />
+	<script src="../js/alert.js"></script>
+	<script src="https://vjs.zencdn.net/ie8/1.1.2/videojs-ie8.min.js"></script>
+	
 </head>
-<body data-spy="scroll" data-target="#pb-navbar" data-offset="200">
-     <!-- START nav -->
-    <nav class="navbar navbar-expand-lg navbar-dark pb_navbar pb_scrolled-light" id="pb-navbar">
-        <div class="container">
-            <a class="navbar-brand" href="index.html"><b>Kaizen 2.0</b></a>
-            <button class="navbar-toggler ml-auto" type="button" data-toggle="collapse" data-target="#probootstrap-navbar" aria-controls="probootstrap-navbar" aria-expanded="false" aria-label="Toggle navigation">
-                <span><i class="ion-navicon"></i></span>
-            </button>
-            <div class="collapse navbar-collapse" id="probootstrap-navbar">
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item"><a class="nav-link" href="#section-home"><b>Home</b></a></li>
-                    <li class="nav-item"><a class="nav-link" href="#section-introduction"><b>Introduction</b></a></li>
-                    <li class="nav-item"><a class="nav-link" href="#section-registration"><b>Registration</b></a></li>
-                    <li class="nav-item"><a class="nav-link" href="#section-news"><b>News</b></a></li>
-                    <li class="nav-item"><a class="nav-link" href="#section-enquiery"><b>Enquiry</b></a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-    <!-- END nav -->
 
-
-    <!--START Section -->
-      <section class="pb_cover_v3 overflow-hidden cover-bg-indigo cover-bg-opacity-8 text-left pb_gradient_v1 pb_slant-light" id="section-home" style="background-image: url(../../assets/images/home1.jpg)">
-        <div class="container">
-            <div class="row align-items-center justify-content-center">
-                <div class="col-md-6">
-                    <h3 class="heading mb-3 pb_font-59"><b>Digital<br> AI-powered Microlearning Platform</b> </h3>
-                    <div class="sub-heading">
-                        <p class="mb-4">To improve productivity by<span class="price"> recognizing</span> the existing situation and <span class="price"> solving</span> the problems of the organization <span class="price">continuously.</span> </p>
-                    </div>
-                </div>
-                <div class="col-md-1">
-                </div>
-                <div class="col-md-5 relative align-self-center">
-                    <form action=<?php echo $_SERVER[ 'REQUEST_URI'] ?> method="POST" class="bg-white rounded pb_form_v1">
-                        <h3 class="mb-4 mt-0 text-center">KAIZEN Microlearning Platform</h3>
-                        <h4 class="mb-4 mt-0 text-center">Login</h4>
-                        <div class="form-group">
-                            <input type="text" class="form-control pb_height-50 reverse" placeholder="ID" name="username" value="<?php echo htmlspecialchars($id, ENT_QUOTES); ?>">
-                        </div>
-                        <div class="form-group">
-                            <input type="password" class="form-control pb_height-50 reverse" placeholder="Password" name="password" value="<?php echo htmlspecialchars($pw, ENT_QUOTES); ?>">
-                        </div>
-                        <div class="form-group">
-                            <input type="submit" name="submit" class="btn btn-primary btn-lg btn-block pb_btn-pill  btn-shadow-blue" value="login">
-                        </div>
-                    </form>
-            <?php
+<body>
+	<nav class="navbar navbar-expand-lg navbar-light fixed-top navbar-custom sticky">
+		<div class="container">
+			<a href="index.php" rel="home" class="main-logo">
+				<img src="../../assets/images/logo2.png" alt="kaizen2.0"  data-retina="assets/img/logo-small@2x.png" data-width="186" data-height="39">
+			</a>
+			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation"> <span class="ti-menu">
+          </span>
+			</button>
+			<div class="collapse navbar-collapse" id="navbarCollapse">
+				<ul class="navbar-nav ml-auto">
+					<li class="nav-item active"> <a class="nav-link" href="#kaizen">Kaizen
+              </a>
+					</li>
+					<li class="nav-item"> <a class="nav-link" href="#join">Join
+              </a>
+					</li>
+					<li class="nav-item"> <a class="nav-link" href="#enquiery">Contact Us
+              </a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+	<!-- START HOME -->
+	<section class="section bg-gradient half-home" id="kaizen">
+		<div class="home-center">
+			<div class="home-desc-center">
+				<div class="container">
+					<div class="row">
+						<div class="col-lg-7 col-sm-6"></div>
+						<div class="col-lg-5 col-sm-6">
+							<div class="bg-white p-4 rounded pb_form_v1">
+								<div class="text-center">
+									<h4 class="font-weight-bold mb-3">KAIZEN Microlearning Platform
+                      </h4>
+									<h5 class="font-weight-bold mb-3">Login
+                      </h5>
+								</div>
+								<form  action=<?php echo $_SERVER[ 'REQUEST_URI'] ?>  method="POST" class="login-form">
+									<div class="row">
+										<div class="col-lg-12 mt-3">
+											<input type="text" class="form-control" placeholder="ID" name="username" value="<?php echo htmlspecialchars($id, ENT_QUOTES); ?>">
+										</div>
+										<div class="col-lg-12 mt-3">
+											<input type="password" class="form-control" placeholder="Password" name="password" value="<?php echo htmlspecialchars($pw, ENT_QUOTES); ?>">
+										</div>
+										<div class="col-lg-12 mt-4 mb-3">
+											<input type="submit" name="submit"  class="btn btn-custom w-100" value="login">
+										</div>
+									</div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+	<!-- END HOME -->
+	<?php
                 if ($id != '' && $pw != '' && ($result['enable'] == '' && $result['joining'] == '')) {
                     print "<script language=javascript>alertMessage('Wrong ID or Password. Please confirm and re-enter the ID and password.')</script>";
                 } else if ($id != '' && $pw != '' && ($result['enable'] == 0 || $result['joining'] == 0)) {
@@ -176,302 +195,283 @@ if (isset($_POST['register'])) {
                     print "<script language=javascript>alertMessage('The ID has not been entered.')</script>";
                 }
             ?>
-                </div>
-            </div>
-        </div>
-      </section>
-    <!-- END Section -->
 
-
-    <!--START Section -->
-    <section class="pb_section bg-light pb_slant-white pb_pb-250" id="section-introduction">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-6 text-center">
-                    <h2>What is Kaizen?</h2>
-                    <br>
-                </div>
-                <h4>“Kaizen” is a Japanese word which means <span class="price">‘change for the better’.</span></h4>
-                <img src="../../assets/images/kaizen.png" alt="Image placeholder" class="img-fluid">
-            </div>
-            <div class="row align-items-center justify-content-center">
-                <div class="col-lg-6 pl-md-12 pl-sm-12">
-                    <div class="media pb_feature-v2 text-left mb-1 mt-5">
-                        <div class="media-body">
-                            <h2>Kaizen is a Japanese methodology which has a proven track-record in improving productivity and quality. Kaizen has been increasingly adopted by organization around the world. Although Kaizen has started from industries, it is now spread out to all kinds of public and private sectors.</h2>
-                            <br>
-                        </div>
+	<!-- Start Services -->
+	<section class="section3">
+		<div class="container">
+			<div class="row justify-content-center text-center">
+				<div class="col-lg-12">
+					<div class="mt-3 mb-3">
+						<h3 class="title">
+                <i class="fa fa-line-chart title-icon text-muted">
+                </i>
+                <span class="font-weight-bold">  KAIZEN2.0：MICROLEARNING WITH A DIGITAL BRAIN
+                </span>
+              </h3>
+					</div>
+					<div class="mt-3 mb-5">
+						<p class="explanation">The objective of Kaizen 2.0 is to pilot the use of a mobile internet-based, artificial intelligence-powered microlearning platform – to teach Japanese Kaizen processes to SMEs in order to improve productivity and managerial skills.</p>
+					</div>
+				</div>
+			</div>
+	</section>
+	<!-- End Services -->
+	<!-- START HOME -->
+	<section class="section bg-gradient1">
+		<div class="container">
+			<div class="row justify-content-center text-center">
+				<div class="col-lg-12 col-md-12">
+					<!-- <i class="ti-ruler-pencil title-icon text-muted"></i> -->
+					<div class="mt-1 mb-3">
+						<h3 class="text-center">
+                  <span class="font-weight-bold">  Introduction of Kaizen
+                  </span>
+                </h3>
+					</div>
+				</div>
+			</div>
+			<summary>
+				<ul class="tabs">
+					<div class="row">
+						<div class="col-4">
+							<li> <a class="nav-title bg-color1" href="#tab1">What is Kaizen
+                      </a>
+							</li>
+						</div>
+						<div class="col-4">
+							<li> <a class="nav-title bg-color1" href="#tab2">Benefits
+                      </a>
+							</li>
+						</div>
+						<div class="col-4">
+							<li> <a class="nav-title bg-color1" href="#tab3">Workflow
+                      </a>
+							</li>
+						</div>
+					</div>
+				</ul>
+				<br>
+				<summary class="wrapper block">
+					<article id="tab1">
+						<div class="row align-items-center justify-content-center text-center">
+							<div class="col-lg-6 col-md-12 col-sm-12">
+								<div class="nav-expl"> <span class="font-weight-bold">“Kaizen” 
+                            </span>is a Japanese word which means <span class="col-blue">
+                              <br>‘change for the better’.
+                            </span>
+								</div>
+								<img src="../../assets/images/kaizen.png" alt="Image placeholder" class="img-fluid">
+								<div class="nav-expl">Kaizen is a Japanese methodology which has a proven track-record in improving productivity and quality. Kaizen has been increasingly adopted by organizations around the world. Although Kaizen has started from industries, it is now spread out to all kinds of public and private sectors.</div>
+							</div>
+							<div class="col-lg-6 col-md-12 col-sm-12 mt-5">
+								<video id="my-video" class="video-js vjs-default-skin vjs-big-play-centered video-center" controls preload="auto" width="450" height="300" data-setup='{ "playbackRates": [1, 1.5, 2] }'>
+									<source src="../../assets/images/kaizen-intro.mp4" type="video/mp4" />
+									<source src="../../assets/images/kaizen-intro.webm" type="video/webm" />
+								</video>
+							</div>
+						</div>
+					</article>
+					<article id="tab2">
+						<div class="row align-items-center justify-content-center text-center">
+							<div class="col-lg-6 col-md-6 col-sm-12">
+								<div class="nav-subtitle"> <i class="fa fa-superpowers pb_icon-gradient">
+                            </i> Objectives</div>
+								<p class="nav-expl">It contributes to improve not only productivity but also quality and delivery by recognizing the existing situation and solving the problems of the organization.</p>
+								<div class="nav-subtitle"> <i class="fa fa-level-up pb_icon-gradient">
+                            </i> Benefits</div>
+								<p class="nav-expl">“Kaizen” methodology can help a company to create “continuous improvement culture” to meet in/external customers’ satisfaction and expectation.Kaizen also contributes to increase income and profit by raising productivity and reducing cost.</p>
+							</div>
+							<div class="col-lg-6 col-md-6 col-sm-12">
+								<img src="../../assets/images/benefit-diagram.png" alt="Image placeholder" class="img-fluid">
+							</div>
+						</div>
+					</article>
+					<article id="tab3">
+						<div class="row justify-content-center text-center">
+							<div class="col-lg-12 ">
+								<div class="nav-subtitle"> <i class="fa fa-leanpub pb_icon-gradient">
+                            </i> Micro-learning environment</div>
+							</div>
+						</div>
+						<br>
+						<div class="row align-items-center justify-content-center text-center">
+							<div class="col-lg-6 col-md-6 col-sm-12">
+								<p class="nav-expl">You fill up the assessment form for registration of Kaizen2.0 then administrator send your login ID & password by E-mail. After that you login to the platform and learn about Kaizen from the video lessons created by Japanese experts. </p>
+								<img src="../../assets/images/work1.jpg" alt="Image placeholder" class="img-fluid">
+							</div>
+							<div class="col-lg-6 col-md-6 col-sm-12">
+								<p class="nav-expl">Afterwards, you conduct Kaizen activity by yourself and report its results to Japanese experts. They will provide feedbacks and suggestions to you.</p>
+								<br>
+								<img src="../../assets/images/work2.jpg" alt="Image placeholder" class="img-fluid">
+							</div>
+					</article>
+				</summary>
+			</summary>
+			</div>
+		</div>
+	</section>
+	<!-- END HOME -->
+	<!-- Start Features -->
+	<section class="section bg-light" id="join">
+		<div class="container">
+			<div class="row align-items-center justify-content-center text-center">
+				<div class="col-lg-12">
+					<h3 class="title">
+                      <i class="fa fa-handshake-o title-icon text-muted">
+                      </i>
+                      <span class="font-weight-bold">Join Kaizen2.0
+                      </span>
+                    </h3>
+				</div>
+			</div>
+			<div class="row  align-items-center justify-content-center mt-5">
+				<div class="col-lg-6 mb-3">
+					<div class="mb-5">
+						<p class="title1 text-center"> <span class="font-weight-bold">Instruction Video For Beginners
+                          </p>
                     </div>
-                </div>
-                <div class="col-lg-1">
-                </div>
-                <div class="col-lg-5 col-md-12 col-sm-12">
-                    <!-- <video class="intro-video" width="560" height="315"  controls>
-                        <source src="../../assets/images/kaizen-sample.mp4" type="video/mp4">
-                        <source src="../../assets/images/kaizen-sample.ogg" type="video/ogg">
-                    </video> -->
                     <video
-    id="my-video"
-    class="video-js vjs-default-skin vjs-big-play-centered"
-    controls
-    preload="auto"
-    width="450"
-    height="300"
-    data-setup='{ "playbackRates": [1, 1.5, 2] }'
-  >
-    <source src="../../assets/images/kaizen-intro.mp4" type="video/mp4" />
-    <source src="../../assets/images/kaizen-intro.webm" type="video/webm" />
-    
-  </video>
-                    <!-- <video controls src="../../assets/images/kaizen-sample.mp4" class="img-fluid" alt="Image placeholder" poster="../../assets/images/thumbnail.png" preload="none" width="560" height="315"> </video> -->
-                    <!-- <img class="img-fluid" alt="Image placeholder" src="../../assets/images/thumbnail.png" width="560" height="315" /> -->
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- END Section -->
-
-
-    <!--START Section -->
-    <section class="pb_section pb_slant-light">
-        <div class="container">
-            <div class="row justify-content-center mb-3">
-                <div class="col-md-6 text-center mb-3">
-                    <!-- <h5 class="text-uppercase pb_font-15 mb-2 pb_color-dark-opacity-3 pb_letter-spacing-2"><strong>Features</strong></h5> -->
-                    <h2>What is the Benefit of Kaizen?</h2>
-                </div>
-            </div>
-            <div class="row align-items-center justify-content-center">
-                <div class="col-lg-4">
-                    <h2><i class="ion-fork-repo pb_icon-gradient"></i>  Objectives</h2>
-                    <p class="pb_font-20">It contributes to improve not only productivity but also quality and delivery as well as reducing cost by recognizing the existing situation and solving the problems of the organization continuously and gradually.</p>
-                    <h2><i class="ion-arrow-graph-up-right pb_icon-gradient"></i>  Benefits </h2>
-                    <p class="pb_font-20">“Kaizen” methodology can help a company to create “continuous improvement culture” to meet in/external customers’ satisfaction and expectation.Kaizen also contributes to increase income and profit by raising productivity and reducing cost.</p>
-                </div>
-                <div class="col-lg-1">
-                </div>
-                <div class="col-lg-7">
-                    <img src="../../assets/images/benefit-diagram.png" alt="Image placeholder" class="img-fluid">
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- END section -->
-
-
-    <!--START Section -->
-    <section class="pb_section bg-light pb_slant-white">
-        <div class="container">
-            <div class="row justify-content-center mb-3">
-                <div class="col-md-8 text-center mb-">
-                    <h2>How does the `Kaizen2.0`project work?</h2>
-                    <br>
-                    <h5 class="text-uppercase pb_font-15 mb-2 pb_color-dark-opacity-3 pb_letter-spacing-2"><strong>Micro-learning environment</strong></h5>
-                </div>
-            </div>
-            <div class="row align-items-center justify-content-center">
-                <div class="col-lg-4 pl-md-4 pl-sm-4">
-                    <p class="pb_font-24">This project is provided for any SMEs in Kenya to join. By your internet connected devices such as smartphone, tablet and PC, you can learn about Kaizen by yourself with micro-learning platform. </p>
-                </div>
-                <div class="col-md-1">
-                </div>
-                <div class="col-lg-7 pl-md-7 pl-sm-7">
-                    <img src="../../assets/images/work1.png" alt="Image placeholder" class="img-fluid">
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- END section -->
-
-
-    <!--START Section -->
-    <section class="pb_section pb_slant-light">
-        <div class="container">
-            <div class="row justify-content-center mb-4">
-                <div class="col-md-6 text-center mb-4">
-                    <h5 class="text-uppercase pb_font-15 mb-2 pb_color-dark-opacity-3 pb_letter-spacing-2"><strong>Micro-learning environment</strong></h5>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-lg-7 col-md-12 col-sm-12">
-                    <img src="../../assets/images/work2.png" alt="Image placeholder" class="img-fluid">
-                </div>
-                <div class="col-lg-1">
-                </div>
-                <div class="col-lg-4 col-md-12 col-sm-12">
-                    <p class="pb_font-24">You create your own account for the micro-learning platform. Then you watch and learn about Kaizen from the video lessons created by Japanese experts. Afterwards, you conduct Kaizen activity by yourself and report its results to Japanese experts. They will provide feedbacks and suggestions to you.
-                        <br>
-                        <br>
-                        <br>
-                        <br> </p>
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- END section -->
-
-
-    <!--START Section -->
-    <section class="pb_section bg-light pb_slant-white" id="section-registration">
-    <div class="container">
-    <div class="row justify-content-center mb-5 mt-0">
-                <div class="col-md-6 text-center mb-1">
-                    <h2>Instruction Video For Beginners to How to Use LMS system</h2>
-                </div>
-            </div>
-    <div class="row align-items-center justify-content-center">
-                <div class="col-lg-6 pl-md-12 pl-sm-12">
-                    <div class="media pb_feature-v2 text-left mb-1 mt-1">
-                        <div class="media-body">
-                            <p class="pb_font-25">Kaizen is a Japanese methodology which has a proven track-record in improving productivity and quality. Kaizen has been increasingly adopted by organization around the world. Although Kaizen has started from industries, it is now spread out to all kinds of public and private sectors.</p>
-                            <br>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-1">
-                </div>
-                <div class="col-lg-5 col-md-12 col-sm-12">
-                    <video controls src="../../assets/images/kaizen-sample.mp4" class="img-fluid" alt="Image placeholder" poster="../../assets/images/thumbnail.png" preload="none" width="560" height="315"> </video>
+                           id="my-video"
+                           class="video-js vjs-default-skin vjs-big-play-centered video-center"
+                           controls
+                           preload="auto"
+                           width="450"
+                           height="300"
+                           data-setup='{ "playbackRates": [1, 1.5, 2] }'
+                           >
+                      <source src="../../assets/images/kaizen-intro.mp4" type="video/mp4" />
+                      <source src="../../assets/images/kaizen-intro.webm" type="video/webm" />
+                    </video>
                   </div>
-              </div>
-            </div>
-        <div class="container">
-            <div class="row justify-content-center mt-5">
-                <div class="col-md-6 text-center mb-5">
-                    <h5 class="text-uppercase pb_font-15 mb-2 pb_color-dark-opacity-3 pb_letter-spacing-2"><strong>Kaizen Member</strong></h5>
-                    <h2>Registration And Login</h2>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md">
-                    <div class="pb_pricing_v1 p-5 border text-center bg-white">
-                        <h3 class="price">Registration for KAIZEN Member</h3>
-                        <br>
-                        <!-- <span class="price">Kaizen micro-learning program</span><br><br> -->
-                        <p class="pb_font-18">Please click the button below and fill The Assesment form for registration</p>
-                        <p class="mb-0"><a href="https://docs.google.com/forms/d/e/1FAIpQLSci8dNssfkZ59aYltDatjGCoTm6F2Fyn6mFBhbd47WPyAWJtg/viewform" target="_blank" role="button" class="btn btn-primary btn-shadow-blue">Registration</a></p>
-                    </div>
-                </div>
-                <div class="col-md">
-                    <div class="pb_pricing_v1 p-5 border  text-center bg-white">
-                        <h3 class="price">Login for the Microlearning platform</h3>
-                        <br>
-                        <!-- <span class="price">ThinkBoard</span><br><br> -->
-                        <p class="pb_font-18">Click the button below to login the KAIZEN Microlearning platform</p>
-                        <p class="mb-0"><a href="#section-home" role="button" class="btn btn-primary btn-shadow-blue">Login</a></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- ENDs ection -->
+                  <div class="col-lg-1">
+                  </div>
+                  <div class="col-lg-5">
+                    <div class="bg-white p-4 mt-3 rounded pb_form_join">
+                      <div class="text-center">
+                        <h4 class="title1 mt-5">
+                          <span class="font-weight-bold">Registration for KAIZEN 2.0
+                          </span>
+							</h4>
+					</div>
+					<h5 class="explanation text-center mt-5">Please click the button below and fill The Assesment form for registration.
+                      </h5>
+					<form class="login-form">
+						<div class="row">
+							<div class="col-lg-12 mt-5 mb-5">
+								<p class="mb-0"></p> <a href="https://docs.google.com/forms/d/e/1FAIpQLSci8dNssfkZ59aYltDatjGCoTm6F2Fyn6mFBhbd47WPyAWJtg/viewform" target="_blank" role="button" class="btn btn-custom w-100">Registration
+                            </a>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		</div>
+	</section>
+	<!-- End Features -->
+	<!-- CONTACT FORM START-->
+	<section class="section1" id="enquiery">
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-lg-6 col-md-12 col-sm-12">
+					<div class="news">
+						<h2 class="text-center"> 
+                      <i class="fa fa-newspaper-o title-icon text-muted">
+                      </i> News & Updates
+                    </h2>
+						<div class="mt-4 pt-4">
+							<div id="pb_faq" class="pb_accordion" data-children=".item">
+                          <?php
+                              $query=mysqli_query($con,"SELECT tblcms_posts.id,tblcms_posts.PostTitle,tblcms_posts.PostDetails,tblcms_posts.PostingDate from tblcms_posts WHERE tblcms_posts.Is_Active=1 ORDER BY tblcms_posts.id DESC ");
+							  while ($row=mysqli_fetch_array($query))
+							  {
+							  $newsdet=$row['PostDetails'];
+							  $findQuery=mysqli_query($con,"SELECT MAX(PostingDate) as last_date FROM tblcms_posts WHERE tblcms_posts.Is_Active=1");
+							  $findQuery =mysqli_fetch_array($findQuery);
+							  $datetime1 = new DateTime($row['PostingDate']);
+							  $datetime2 = new DateTime();
+							  $interval = $datetime1->diff($datetime2);
+							  if($findQuery['last_date']==$row['PostingDate'] &&  $interval->format('%a') < 30)
+							  {
+                          ?>
+									<div class="item">
+										<a data-toggle="collapse" data-parent="#pb_faq" href="#pb_faq<?php echo$row['id'];?>" aria-expanded="false" aria-controls="pb_faq<?php echo$row['id'];?>" class="pb_font-22 py-4">
+											<p class="day">
+												<?php echo $row[ 'PostingDate'];?>
+											</p>
+											<p class="news-title">
+												<?php echo $row[ 'PostTitle'];?>
+												<img src="../../assets/images/new02.png" style="height: 22px;">
+											</p>
+										</a>
+										<div id="pb_faq<?php echo$row['id'];?>" class="collapse" role="tabpanel">
+											<div class="py-3">
+												<?php echo (substr($newsdet,0));?>
+											</div>
+										</div>
+									</div>
+									          <?php }else{ ?>
+									<div class="item">
+										<a data-toggle="collapse" data-parent="#pb_faq" href="#pb_faq<?php echo$row['id'];?>" aria-expanded="false" aria-controls="pb_faq<?php echo$row['id'];?>" class="py-4">
+											<p class="day">
+												<?php echo $row[ 'PostingDate'];?>
+											</p>
+											<p class="news-title">
+												<?php echo $row[ 'PostTitle'];?>
+											</p>
+										</a>
+										<div id="pb_faq<?php echo$row['id'];?>" class="collapse" role="tabpanel">
+											<div class="py-3">
+												<?php echo (substr($newsdet,0));?>
+											</div>
+										</div>
+									</div>
+									          <?php }}?>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-lg-6 col-md-12 col-sm-12">
+					<div class="enquiery">
+						<h2 class="text-center"> 
+                      <i class="ti-headphone-alt title-icon text-muted">
+                      </i>  Contact Us
+                    </h2>
+						<div class="bg-white p-4 rounded">
+							<div class="bg-white p-4 mt-0 rounded ">
+								<div class="text-center">
+									<h4 class="font-weight-bold">
+                          </h4>
+								</div>
+								<form class="login-form" method="POST" id="enquiery">
+									<div class="row">
+										<div class="col-lg-12 mt-2">
+											<input type="text" class="form-control" name="fullname" placeholder="Your Name" required="">
+										</div>
+										<div class="col-lg-12 mt-2">
+											<input type="text" class="form-control"  name="company" placeholder="Company Name" required="">
+										</div>
+										<div class="col-lg-12 mt-2">
+											<input type="email" class="form-control" name="email" placeholder="Email" required="">
+										</div>
+										<div class="col-lg-12 mt-2">
+											<label for="exampleFormControlTextarea1" class="explanation">Enquiery Details</label>
+											<textarea type="text" class="form-control pb_height-150" name="enquiery" required></textarea>
+										</div>
+										<div class="col-lg-12 mt-4">
+											<input type="submit" class="btn btn-custom w-100" name="register" value="Send" onclick="return confirm('Are you sure to register all information you entered');">
+										</div>
+									</div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+	</section>
+	<!-- CONTACT FORM END -->
 
-
-    <!--START Section -->
-    <section class="pb_section pb_slant-white" id="section-news">
-        <div class="container">
-            <div class="row justify-content-center mb-5">
-                <div class="col-md-6 text-center mb-5">
-                    <h5 class="text-uppercase pb_font-15 mb-2 pb_color-dark-opacity-3 pb_letter-spacing-2"><strong></strong></h5>
-                    <h2>News & Updates</h2>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md">
-                    <div id="pb_faq" class="pb_accordion" data-children=".item">
-
-                        <?php
-$query=mysqli_query($con,"SELECT tblcms_posts.id,tblcms_posts.PostTitle,tblcms_posts.PostDetails,tblcms_posts.PostingDate from tblcms_posts WHERE tblcms_posts.Is_Active=1 ORDER BY tblcms_posts.id DESC ");
-while ($row=mysqli_fetch_array($query))
-{
-$newsdet=$row['PostDetails'];
-$findQuery=mysqli_query($con,"SELECT MAX(PostingDate) as last_date FROM tblcms_posts WHERE tblcms_posts.Is_Active=1");
-$findQuery =mysqli_fetch_array($findQuery);
-$datetime1 = new DateTime($row['PostingDate']);
-$datetime2 = new DateTime();
-$interval = $datetime1->diff($datetime2);
-if($findQuery['last_date']==$row['PostingDate'] &&  $interval->format('%a') < 30)
-{
-?>
-                            <div class="item">
-                                <a data-toggle="collapse" data-parent="#pb_faq" href="#pb_faq<?php echo$row['id'];?>" aria-expanded="false" aria-controls="pb_faq<?php echo$row['id'];?>" class="pb_font-22 py-4">
-                                    <p class="day">
-                                        <?php echo $row['PostingDate'];?>
-                                    </p>
-                                    <p class="title">
-                                        <?php echo $row['PostTitle'];?> <img src="../../assets/images/new02.png" style="height: 22px;"></p>
-                                </a>
-                                <div id="pb_faq<?php echo$row['id'];?>" class="collapse" role="tabpanel">
-                                    <div class="py-3">
-                                        <?php echo (substr($newsdet,0));?>
-                                    </div>
-                                </div>
-                            </div>
-                            <?php  }else{ ?>
-                                <div class="item">
-                                    <a data-toggle="collapse" data-parent="#pb_faq" href="#pb_faq<?php echo$row['id'];?>" aria-expanded="false" aria-controls="pb_faq<?php echo$row['id'];?>" class="pb_font-22 py-4">
-                                        <p class="day">
-                                            <?php echo $row['PostingDate'];?>
-                                        </p>
-                                        <p class="title">
-                                            <?php echo $row['PostTitle'];?> </p>
-                                    </a>
-                                    <div id="pb_faq<?php echo$row['id'];?>" class="collapse" role="tabpanel">
-                                        <div class="py-3">
-                                            <?php echo (substr($newsdet,0));?>
-                                        </div>
-                                    </div>
-                                </div>
-                                <?php }}?>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- ENDs ection -->
-
-
-    <!--START Section -->
-    <section class="pb_xl_py_cover overflow-hidden  pb_slant-light pb_gradient_v1 cover-bg-opacity-8" id="section-enquiery" style="background-image: url(../../assets/images/1900x1200_img_5.jpg)">
-        <div class="container">
-            <div class="row align-items-center justify-content-center">
-                <div class="col-md-5 justify-content-center">
-                    <h3 class="heading mb-5 pb_font-40">“Learning experiences are like journeys. The journey starts where the learning is now, and ends when the learner is successful. The end of the journey isn’t knowing more, it’s doing more.”</h3>
-                    <div class="sub-heading text-indent">
-                        <p class="pl-5"> – Julie Dirksen</p>
-                    </div>
-                </div>
-                <div class="col-md-1"></div>
-                <div class="col-md-5">
-                    <form class="bg-white rounded pb_form_v1" method="POST" id="enquiery" autocomplete="off">
-                        <h2 class="mb-4 mt-0 text-center">Enquiry</h2>
-                        <div class="form-group">
-                            <input type="text" class="form-control py-3 reverse" name="fullname" placeholder="Your Name" required/>
-                        </div>
-                        <div class="form-group">
-                            <input type="text" class="form-control py-3 reverse" name="company" placeholder="Your Company Name" required/>
-                        </div>
-                        <div class="form-group">
-                            <input type="text" class="form-control py-3 reverse" name="email" placeholder="Your Email" required/>
-                        </div>
-                        <div class="form-group">
-                            <label for="exampleFormControlTextarea1">Enquiery Details </label>
-                            <textarea class="form-control pb_height-150 reverse" name="enquiery" required></textarea>
-                        </div>
-                        <div class="form-group">
-                            <input type="submit" class="btn btn-primary btn-lg btn-block pb_btn-pill  btn-shadow-blue" name="register" value="Send" onclick="return confirm('Are you sure to register all information you entered');">
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- ENDs ection -->
-
-
-    <!--START modal -->
-    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+ <!--START modal -->
+ <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -490,76 +490,108 @@ if($findQuery['last_date']==$row['PostingDate'] &&  $interval->format('%a') < 30
     <!-- ENDs model -->
 
 
-    <!--START Footer -->
 
-    <footer class="pb_footer bg-light" role="contentinfo">
-        <div class="container">
-            <div class="row text-center">
-                <div class="col-sm mt-4">
-                    <a href="https://www.thegpsc.org/sites/gpsc/files/partnerdocs/program_book_-_world_bank_learning_event_-_disruptive_technologies_for_development_20180627.pdf" target="blank"><img src="../../assets/images/DT4D11.png" alt="Image placeholder" height="175"></a>
-                </div>
-                <div class="col-sm mt-4">
-                    <a href="https://www.worldbank.org" target="blank"><img src="../../assets/images/worldbank1.png" alt="Image placeholder" height="175"></a>
-                </div>
-                <div class="col-sm mt-4">
-                    <a href="https://www.jpc-net.jp/eng/" target="blank"><img src="../../assets/images/jpc1.png" alt="Image placeholder" height="175"></a>
-                </div>
-                <div class="col-sm mt-4">
-                    <a href="https://www.avivatechnologies.com/home.html" target="blank"><img src="../../assets/images/aviva.png" alt="Image placeholder" height="175"></a>
-                </div>
-                <div class="col-sm mt-4">
-                    <a href="https://www.e-kjs.jp/en/index.php" target="blank"><img src="../../assets/images/kjs1.png" alt="Image placeholder" height="175"></a>
-                </div>
-            </div>
-        </div>
-
-        <br>
-        <br>
-        <div class="row">
-            <div class="col text-center">
-                <p class="pb_font-14">&copy; All Rights Reserved by <a href="https://www.e-kjs.jp/en/index.php" target="_blank" rel="nofollow">KJS</a></p>
-            </div>
-        </div>
-        </div>
-    </footer>
-    <!-- END Footer -->
-
-
-    <!-- loader -->
-    <div id="pb_loader" class="show fullscreen">
-        <svg class="circular" width="48px" height="48px">
-            <circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee" />
-            <circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#1d82ff" />
-        </svg>
-    </div>
-
-    <script src="../../assets/js/jquery.min.js"></script>
-
-    <script src="../../assets/js/popper.min.js"></script>
-    <script src="../../assets/js/bootstrap.min.js"></script>
-    <script src="../../assets/js/slick.min.js"></script>
-    <script src="../../assets/js/jquery.mb.YTPlayer.min.js"></script>
-
-    <script src="../../assets/js/jquery.waypoints.min.js"></script>
-    <script src="../../assets/js/jquery.easing.1.3.js"></script>
-    <script src="https://vjs.zencdn.net/7.6.6/video.js"></script>
-    <script src="../../assets/js/main.js"></script>
-    <?php if (isset($_POST['register'])) { ?>
+	<!-- Start Footer -->
+	<section class="section1 bg-footer">
+		<!-- <div class="bg-overlay"></div> -->
+		<div class="container">
+			<div class="row align-items-center justify-content-center text-center ml-auto">
+				<div class="col-6 col-md mt-4">
+					<a href="https://www.thegpsc.org/sites/gpsc/files/partnerdocs/program_book_-_world_bank_learning_event_-_disruptive_technologies_for_development_20180627.pdf" target="blank">
+						<img src="../../assets/images/DT4D11.png" alt="Image placeholder" height="175">
+					</a>
+				</div>
+				<div class="col-6 col-md mt-4">
+					<a href="https://www.worldbank.org" target="blank">
+						<img src="../../assets/images/worldbank1.png" alt="Image placeholder" height="175">
+					</a>
+				</div>
+				<div class="col-6 col-md mt-4">
+					<a href="https://www.jpc-net.jp/eng/" target="blank">
+						<img src="../../assets/images/jpc1.png" alt="Image placeholder" height="175">
+					</a>
+				</div>
+				<div class="col-6 col-md mt-4">
+					<a href="https://www.avivatechnologies.com/home.html" target="blank">
+						<img src="../../assets/images/aviva.png" alt="Image placeholder" height="175">
+					</a>
+				</div>
+				<div class="col-6 col-md mt-4">
+					<a href="https://www.e-kjs.jp/en/index.php" target="blank">
+						<img src="../../assets/images/kjs1.png" alt="Image placeholder" height="175">
+					</a>
+				</div>
+			</div>
+			<div>
+	</section>
+	<section class="section1 bg-footer">
+		<div class="container-fluid">
+			<hr class="style-six">
+		</div>
+	</section>
+	<section class="section1 bg-footer">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-6 col-md-6">
+					<ul class="list-unstyled address">
+						 <li>Local consultant contact:</li>
+						<li>Aviva Technologies Ltd.,</li>
+						<li>5th Floor, Utumishi Co-Op House,</li>
+						<li>Mamlaka Road, (behind Serena Hotel).</li>
+						<li>P.O. Box 7564 - 00200 City Square, Nairobi Kenya.</li>
+				</div>
+				<div class="col-lg-6 col-md-6">
+					<ul class="address list-unstyled ">
+						<li><br></li>
+						<li>Tel: +254-20-269-6387;</li>
+						<li>Mobile: 0721-910-856;</li>
+						<li>Email: info@aviva.co.ke</li>
+						<li>
+							<a class="footer1" href="https://maps.app.goo.gl/yH6izjSTUw9Gs6AT7" target="blank"> <u>location map
+                                  </u>
+							</a>
+						</li>
+				</div>
+			</div>
+		</div>
+		</div>
+	</section>
+	<section class="section2 bg-footer1">
+		<div class="container">
+			<div class="row">
+				<div class="col text-center">
+					<p class="footer2">&copy; All Rights Reserved by
+						<a href="https://www.e-kjs.jp/en/index.php" target="_blank" rel="nofollow"> <span class="companyname">KJS
+                                  </span>
+						</a>
+					</p>
+				</div>
+			</div>
+		</div>
+	</section>
+	<!-- End Footer -->
+	<!-- Back to top -->
+	<a href="#" class="back-to-top" id="back-to-top"> <i class="ti-angle-up"> 
+                        </i> 
+	</a>
+	<!-- JAVASCRIPTS -->
+	<script src="../../assets/js/jquery.min.js"></script>
+	
+	<script src="../../assets/js/popper.min.js"></script>
+	<script src="../../assets/js/bootstrap.bundle.min.js"></script>
+	<script src="../../assets/js/jquery.easing.min.js"></script>
+	<script src="../../assets/js/scrollspy.min.js"></script>
+	<script src="../../assets/js/owl.carousel.min.js"></script>
+	<script src="../../assets/js/navlink.js"></script>
+	<!-- SCROLLSPY JS -->
+	<script src="../../assets/js/scrollspy.min.js"></script>
+	<!-- CUSTOM JS -->
+	<script src="../../assets/js/app.js"></script>
+	<script src="https://vjs.zencdn.net/7.6.6/video.js"></script>
+	<?php if (isset($_POST['register'])) { ?>
         <script>
             $('#myModal').modal('show')
         </script>
         <?php } ?>
-            <script>
-                var vid = document.getElementById("gossVideo");
-
-                function playVid() {
-                    vid.play();
-                }
-
-                function pauseVid() {
-                    vid.pause();
-                }
-            </script>
 </body>
-
 </html>
