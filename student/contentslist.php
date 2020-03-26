@@ -199,38 +199,42 @@ NOT IN
 $result = $con->query($sql);
 if ($result->num_rows > 0) {
     while($row = $result->fetch_assoc()) {
-       array_push($contentsRecommendationList,$row["contents_id"]); // inserting contents_id in $contentsRecommendationList array
-       $sql="select bit_classroom from tbl_contents where contents_id = ".$row['contents_id'];
-       $subResult = $con->query($sql);
-       while($subRow = $subResult->fetch_assoc())
-       {
-           $tmp = dbToCsvConverter($subRow["bit_classroom"]);   // subcategory id is converting to csv format from DB bit_classroom format
-           if(!isset($subCategoryContentsCount[$tmp]))
-           {
-               $subCategoryContentsCount[$tmp] = 1;             // how many recommended contents are there for a subcategory id that is counting here
-           }
-           else
-           {
-               $subCategoryContentsCount[$tmp]++;
-           }
-           if(!in_array($tmp,$subCategoryRecommendationList))
-           {
-               array_push($subCategoryRecommendationList,$tmp); // inserting subcategory id in $subCategoryRecommendationList
-           }
-           if(!in_array($csvRowC[$tmp],$categoryRecommendationList))
-           {
-               array_push($categoryRecommendationList,$csvRowC[$tmp]);  // inserting category id in $categoryRecommendationList
-           }
-           if(!isset($_GLOBALS['$tmpTree'][$csvRowC[$tmp]][$tmp]))                              // making the whole recommendation tree
-           {
-               $_GLOBALS['$tmpTree'][$csvRowC[$tmp]][$tmp]=array();
-               array_push($_GLOBALS['$tmpTree'][$csvRowC[$tmp]][$tmp],$row["contents_id"]);
-           }
-           else
-           {
-               array_push($_GLOBALS['$tmpTree'][$csvRowC[$tmp]][$tmp],$row["contents_id"]);
-           }
-       }
+    //    array_push($contentsRecommendationList,$row["contents_id"]); // inserting contents_id in $contentsRecommendationList array
+        if(!in_array($row["contents_id"],$contentsRecommendationList))
+        {
+            array_push($contentsRecommendationList,$row["contents_id"]); // inserting contents_id in $contentsRecommendationList array
+            $sql="select bit_classroom from tbl_contents where contents_id = ".$row['contents_id'];
+            $subResult = $con->query($sql);
+            while($subRow = $subResult->fetch_assoc())
+            {
+                $tmp = dbToCsvConverter($subRow["bit_classroom"]);   // subcategory id is converting to csv format from DB bit_classroom format
+                if(!isset($subCategoryContentsCount[$tmp]))
+                {
+                    $subCategoryContentsCount[$tmp] = 1;             // how many recommended contents are there for a subcategory id that is counting here
+                }
+                else
+                {
+                    $subCategoryContentsCount[$tmp]++;
+                }
+                if(!in_array($tmp,$subCategoryRecommendationList))
+                {
+                    array_push($subCategoryRecommendationList,$tmp); // inserting subcategory id in $subCategoryRecommendationList
+                }
+                if(!in_array($csvRowC[$tmp],$categoryRecommendationList))
+                {
+                    array_push($categoryRecommendationList,$csvRowC[$tmp]);  // inserting category id in $categoryRecommendationList
+                }
+                if(!isset($_GLOBALS['$tmpTree'][$csvRowC[$tmp]][$tmp]))                              // making the whole recommendation tree
+                {
+                    $_GLOBALS['$tmpTree'][$csvRowC[$tmp]][$tmp]=array();
+                    array_push($_GLOBALS['$tmpTree'][$csvRowC[$tmp]][$tmp],$row["contents_id"]);
+                }
+                else
+                {
+                    array_push($_GLOBALS['$tmpTree'][$csvRowC[$tmp]][$tmp],$row["contents_id"]);
+                }
+            }
+        }
     }
 }
 if(isset($_GLOBALS['$tmpTree']))
@@ -249,12 +253,19 @@ foreach($recommendationTree as $key1=>$value1)
         }
     }
 }
+// echo("contentsRecommendationList:<br>");
 // print_r($contentsRecommendationList);
-// echo("<br>");
+// echo("<br><br>subCatList:<br>");
+// print_r($subCatList);
+// echo("<br><br>tree :<br>");
+// print_r($recommendationTree);
+// echo("<br><br>CatList:<br>");
+// print_r($catList);
+// echo("<br><br>subCategoryRecommendationList:");
 // print_r($subCategoryRecommendationList);
-// echo("<br>");
+// echo("<br><br>categoryRecommendationList:");
 // print_r($categoryRecommendationList);
-// echo("<br>");
+// echo("<br><br>subCategoryContentsCount:");
 // print_r($subCategoryContentsCount);
 /*For Recommendation */
 
@@ -642,7 +653,7 @@ for($current = count($csvMenu); $current >= 1; $current --) {
 						${'menu' . $current}[$key] .= ' class="open"';
 						$subject_genre_name = $csvName[$line];
                     }
-                    $parentLabel = (in_array($line,$catList)) ? '<span class="recommend">Recommend('.count($subCatList).')</span>':"";
+                    $parentLabel = (in_array($line,$catList)) ? '<span class="recommend">Recommend('.count($recommendationTree[$line]).')</span>':"";
                     ${'menu' . $current}[$key] .= '>' . "\n" .'<a class="togglebtn">' . $csvName[$line] .$parentLabel. '</a>' . "\n";
 					${'menu' . $current}[$key] .= ${'menu' . ($current + 1)}[$line] .'</li>' . "\n"; //子項目を挿入 Insert child item
 				}
@@ -676,8 +687,9 @@ for($current = count($csvMenu); $current >= 1; $current --) {
                             ${'menu' . $current}[$key] .= ' class="active"';
                             $subject_section_name = $csvName[$line];
                         }
-                        $childLabel = (in_array($line,$subCatList)) ? "<span class='new'>Recommend</span>":""; /* For Recommendation */
-                        ${'menu' . $current}[$key] .= '><a href="' . $_SERVER['SCRIPT_NAME'] . '?bid=' . $line . '">' . $csvName[$line] . $childLabel .'</a></li>' . "\n";
+                        $childLabel = (in_array($line,$subCatList)) ? "<span class='new'>Re</span>":""; /* For Recommendation */
+                        //$colorForchild = (in_array($line,$subCatList)) ? 'style="color:blue;"':""; /* For Recommendation */
+                        ${'menu' . $current}[$key] .= '><a href="' . $_SERVER['SCRIPT_NAME'] . '?bid=' . $line . '">' . $childLabel . $csvName[$line] .'</a></li>' . "\n";
                      }
                 //}
 			}
