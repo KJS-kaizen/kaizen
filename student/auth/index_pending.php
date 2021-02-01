@@ -8,15 +8,15 @@ if (isset($_POST['register'])) {
     $fullname=$_POST['fullname'];
     $company=$_POST['company'];
 	$email=$_POST['email'];
-	$enquiery_subject=$_POST['enquiery_subject'];
+	// $enquiery_subject=$_POST['enquiery_subject'];
 	$enquiery=$_POST['enquiery'];
 	$ip_addr = getUserIpAddr();
   	$browser = $_SERVER['HTTP_USER_AGENT'];
 
     $to = "$email";
     $to1 = "info@e-kjs.jp";
-    $subject = mb_encode_mimeheader("Thanks For Your Inquiry. Please do not reply to this E-mail, it is auto-generated");
-    $subject1 = mb_encode_mimeheader("Kaizen2.0- New inquiry from the customer"); 
+    $subject = mb_encode_mimeheader("Thanks For your interest to registeration for Kaizen2.0. Please do not reply to this E-mail, it is auto-generated");
+    $subject1 = mb_encode_mimeheader("Kaizen2.0- Registration request from the customer"); 
     $headers_from = 'From: info@e-kjs.jp' . "\n";
     //$headers = 'From: info@e-kjs.jp' . "\n";
     $headers = 'MIME-Version: 1.0' . "\n";
@@ -25,15 +25,13 @@ if (isset($_POST['register'])) {
                     <table width=100% margin=0>  <tbody>  <!---outer table -->
                     <tr><td>Dear $fullname </td></tr><br>
                     <tr><td></td></tr>
-                    <tr><td>Thank you for your inquiry to us, Kaizen2.0 project! </td></tr> 
+                    <tr><td>Thank you for your interest to register-Kaizen2.0 project! </td></tr> 
                     <tr><td></td></tr>                              
                     <tr><td>Now, we are checking your inquiry,so please wait a few days for our reply to you.Thank you. </td></tr><br>
                     <tr><td></td></tr>
                     <tr><td>Best Regards,</td></tr>
                     <tr><td>------------------------------------------------------------------------------------------------------------</td></tr><br>
-                    <tr><td>KAIZEN2.0: MICROLEARNING WITH A DIGITAL BRAIN project </td></tr>
-                    <tr><td>email:〇〇〇〇 </td></tr>
-                    <tr><td>HP:〇〇〇〇 </td></tr>
+                    <tr><td>KAIZEN2.0 </td></tr>
                     <tr><td>------------------------------------------------------------------------------------------------------------</td></tr><br>
                     </table>
                     </body>
@@ -45,16 +43,15 @@ if (isset($_POST['register'])) {
                     <table width=100% margin=0>  <tbody>  <!---outer table -->
                     <tr><td>Dear Kaizen2.0 Admin,</td></tr><br>
                     <tr><td></td></tr>
-                    <tr><td>We have a new inquiry from the below mentioned customer</td></tr><br>
+                    <tr><td>We have a Kaizen2.0 registration request from the below mentioned customer</td></tr><br>
                     <tr><td></td></tr>
                     <tr><td>------------------------------------------------------------------------------------------------------------</td></tr><br>
                     <tr><td><strong>Name：</strong>$fullname</td></tr>
                     <tr><td><strong>Company：</strong>$company</td></tr>
 					<tr><td><strong>E-mail：</strong>$email</td></tr>
-					<tr><td><strong>E-mail：</strong>$enquiery_subject</td></tr>
                     <tr><td><strong>Message：</strong>$enquiery</td></tr>
                     <tr><td>------------------------------------------------------------------------------------------------------------</td></tr><br>
-                    <tr><td>Please respond to the inquiry as soon as possible.</td></tr>
+                    <tr><td>Please respond to the registration request as soon as possible.</td></tr>
                     <tr><td><strong>User's additional Information  ：</strong></td></tr>
 					<tr><td><strong>IP address      ：</strong>$ip_addr</td></tr>
 					<tr><td><strong>Browser Details ：</strong>$browser</td></tr>
@@ -148,7 +145,7 @@ if (isset($_POST['register'])) {
 	<nav class="navbar navbar-expand-lg navbar-light fixed-top navbar-custom sticky">
 		<div class="container">
 			<a href="index.php" rel="home" class="main-logo">
-				<img src="../../assets/images/logo2.png" alt="kaizen2.0"  data-retina="assets/img/logo-small@2x.png" data-width="186" data-height="39">
+				<img src="../../assets/images/logo4.png" alt="kaizen2.0"  data-retina="assets/img/logo-small@2x.png" data-width="186" data-height="20">
 			</a>
 			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation"> <span class="ti-menu">
           </span>
@@ -158,10 +155,10 @@ if (isset($_POST['register'])) {
 					<li class="nav-item active"> <a class="nav-link" href="#kaizen">Kaizen
               </a>
 					</li>
-					<li class="nav-item"> <a class="nav-link" href="#join">Join
+					<!-- <li class="nav-item"> <a class="nav-link" href="#join">Join
               </a>
-					</li>
-					<li class="nav-item"> <a class="nav-link" href="#enquiery">Contact Us
+					</li> -->
+					<li class="nav-item"> <a class="nav-link" href="#enquiery">Registration
               </a>
 					</li>
 				</ul>
@@ -217,7 +214,7 @@ if (isset($_POST['register'])) {
             ?>
 
 	<!-- Start Services -->
-	<section class="section3">
+	<section class="section3 bg-light">
 		<div class="container">
 			<div class="row justify-content-center text-center">
 				<div class="col-lg-12">
@@ -225,12 +222,12 @@ if (isset($_POST['register'])) {
 						<h3 class="title">
                 <i class="fa fa-line-chart title-icon text-muted">
                 </i>
-                <span class="font-weight-bold">  KAIZEN2.0：MICROLEARNING WITH A DIGITAL BRAIN
+                <span class="font-weight-bold">  KAIZEN Mall
                 </span>
               </h3>
 					</div>
 					<div class="mt-3 mb-5">
-						<p class="explanation">The objective of Kaizen 2.0 is to pilot the use of a mobile internet-based, artificial intelligence-powered microlearning platform – to teach Japanese Kaizen processes to SMEs in order to improve productivity and managerial skills.</p>
+						<p class="explanation">KAIZEN Mall is to teach Japanese Kaizen processes to SMEs in order to improve productivity and managerial skills.</p>
 					</div>
 				</div>
 			</div>
@@ -316,7 +313,7 @@ if (isset($_POST['register'])) {
 						<br>
 						<div class="row align-items-center justify-content-center text-center">
 							<div class="col-lg-6 col-md-6 col-sm-12">
-								<p class="nav-expl">You fill up the assessment form for registration of Kaizen2.0 then administrator send your login ID & password by E-mail. After that you login to the platform and learn about Kaizen from the video lessons created by Japanese experts. </p>
+								<p class="nav-expl">You fill up the assessment form for registration of Kaizen Mall then administrator send your login ID & password by E-mail. After that you login to the platform and learn about Kaizen from the video lessons created by Japanese experts. </p>
 								<img src="../../assets/images/work1.jpg" alt="Image placeholder" class="img-fluid">
 							</div>
 							<div class="col-lg-6 col-md-6 col-sm-12">
@@ -332,7 +329,7 @@ if (isset($_POST['register'])) {
 	</section>
 	<!-- END HOME -->
 	<!-- Start Features -->
-	<section class="section bg-light" id="join">
+	<!-- <section class="section bg-light" id="join">
 		<div class="container">
 			<div class="row align-items-center justify-content-center text-center">
 				<div class="col-lg-12">
@@ -387,7 +384,7 @@ if (isset($_POST['register'])) {
 			</div>
 		</div>
 		</div>
-	</section>
+	</section> -->
 	<!-- End Features -->
 	<!-- CONTACT FORM START-->
 	<section class="section1" id="enquiery">
@@ -454,8 +451,8 @@ if (isset($_POST['register'])) {
 				<div class="col-lg-6 col-md-12 col-sm-12">
 					<div class="enquiery">
 						<h2 class="text-center"> 
-                      <i class="ti-headphone-alt title-icon text-muted">
-                      </i>  Contact Us
+                      <i class="ti-write title-icon text-muted">
+                      </i>Registration
                     </h2>
 						<div class="bg-white p-4 rounded">
 							<div class="bg-white p-4 mt-0 rounded ">
@@ -466,38 +463,41 @@ if (isset($_POST['register'])) {
 								<form class="login-form" method="POST" id="enquiery">
 									<div class="row">
 										<div class="col-lg-12 mt-2">
-											<input type="text" class="form-control" name="fullname" placeholder="Your Name" required="">
+											<label for="exampleFormControlTextarea1" class="text-secondary"><span class="text-danger">* </span>mandatory</label>
 										</div>
 										<div class="col-lg-12 mt-2">
-											<input type="text" class="form-control"  name="company" placeholder="Company Name" required="">
+											<input type="text" class="form-control" name="fullname" placeholder="Your Name *" required="">
 										</div>
 										<div class="col-lg-12 mt-2">
-											<input type="email" class="form-control" name="email" placeholder="Email" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,3}$" required="">
+											<input type="text" class="form-control"  name="company" placeholder="Company Name *" required="">
 										</div>
 										<div class="col-lg-12 mt-2">
+											<input type="email" class="form-control" name="email" placeholder="Email *" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,3}$" required="">
+										</div>
+										<!-- <div class="col-lg-12 mt-2">
 											<input type="text" class="form-control" name="enquiery_subject" placeholder="Subject" required="">
-										</div>
+										</div> -->
 										<div class="col-lg-12 mt-2">
-											<label for="exampleFormControlTextarea1" class="explanation">Enquiery Details</label>
-											<textarea type="text" class="form-control pb_height-100" name="enquiery" required></textarea>
+											<!-- <label for="exampleFormControlTextarea1" class="explanation">Enquiery Details</label> -->
+											<textarea type="text" class="form-control pb_height-100" name="enquiery" placeholder="If you have any enquiery"></textarea>
 										</div>
 										<div class="col-lg-12 mt-4">
 											<section>
-												<input type="text" class="form-control" id="UserCaptchaCode" placeholder='Enter Captcha - Case Sensitive'  onBlur="CheckCaptcha()" required>
+												<input type="text" class="form-control" id="UserCaptchaCode" placeholder='Enter Captcha *'  onBlur="CheckCaptcha()" required>
 												<span id="WrongCaptchaError" class="error"></span>
 											</section>
 											<section>
 												<span id="SuccessMessage" class="success">Hurray! Your have successfully entered the captcha.</span>
 												<div class='CaptchaWrap'>
 													<div id="CaptchaImageCode" class="CaptchaTxtField">
-														<canvas id="CapCode" class="capcode" width="300" height="80"></canvas>
+														<canvas id="CapCode" class="capcode" width="240" height="64"></canvas>
 													</div> 
 													<input type="button" class="ReloadBtn" onclick='CreateCaptcha();'>
 												</div>
 											</section>
 										</div>
 										<div class="col-lg-12 mt-4">
-											<input type="submit" class="btn btn-custom w-100" name="register" value="Send" onclick="return confirm('Are you sure to register all information you entered');">
+											<input type="submit" class="btn btn-custom w-100" name="register" value="Register" onclick="return confirm('Are you sure to register all information you entered');">
 										</div>
 									</div>
 								</form>
@@ -530,8 +530,7 @@ if (isset($_POST['register'])) {
 
 
 	<!-- Start Footer -->
-	<section class="section1 bg-footer">
-		<!-- <div class="bg-overlay"></div> -->
+	<!-- <section class="section1 bg-footer">
 		<div class="container">
 			<div class="row align-items-center justify-content-center text-center ml-auto">
 				<div class="col-6 col-md mt-4">
@@ -566,19 +565,31 @@ if (isset($_POST['register'])) {
 		<div class="container-fluid">
 			<hr class="style-six">
 		</div>
-	</section>
+	</section> -->
 	<section class="section1 bg-footer">
 		<div class="container">
 			<div class="row">
-				<div class="col-lg-6 col-md-6">
+				<div class="col-lg-3 col-md-6 col-6 mt-4">
+					<a href="https://www.avivatechnologies.com/home.html" target="blank">
+						<img src="../../assets/images/aviva.png" class="rounded foot_logo_size" alt="Image placeholder">
+					</a>
+				</div>
+				<div class="col-lg-3 col-md-6 col-6 mt-4">
+					<a href="https://www.e-kjs.jp/en/index.php" target="blank">
+						<img src="../../assets/images/kjs1.png" class="rounded foot_logo_size" alt="Image placeholder">
+					</a>
+				</div>
+				<hr class="style-six">
+				<div class="col-lg-3 col-md-6 mt-4">
 					<ul class="list-unstyled address">
 						 <li>Local consultant contact:</li>
 						<li>Aviva Technologies Ltd.,</li>
 						<li>5th Floor, Utumishi Co-Op House,</li>
 						<li>Mamlaka Road, (behind Serena Hotel).</li>
 						<li>P.O. Box 7564 - 00200 City Square, Nairobi Kenya.</li>
+					</ul>
 				</div>
-				<div class="col-lg-6 col-md-6">
+				<div class="col-lg-3 col-md-6 mt-4">
 					<ul class="address list-unstyled ">
 						<li><br></li>
 						<li>Tel: +254-20-269-6387;</li>
@@ -589,6 +600,7 @@ if (isset($_POST['register'])) {
                                   </u>
 							</a>
 						</li>
+					</ul>
 				</div>
 			</div>
 		</div>
