@@ -41,8 +41,8 @@ $loader->registerDir(dirname(__FILE__) . '/class');
 $loader->registerDir(dirname(__FILE__) . '/models');
 $loader->register();
 
-$url = 'localhost/kaizen/core/module/';
-$url2 = 'localhost/kaizen/';
+$url = 'localhost/kaizen/core/module/'; // this is for local host. For server it will be changed to "kaizen2.net/core/module"
+$url2 = 'localhost/kaizen/'; // this is for local host. For server it will be changed to "kaizen2.net"
 
 define ("BASE_URL" ,$_SERVER["HTTP_HOST"]);
 ?>
