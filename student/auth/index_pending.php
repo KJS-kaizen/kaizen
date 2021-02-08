@@ -102,7 +102,7 @@ if (isset($_POST['register'])) {
           //$_SESSION['auth']['level'] = 'student';
           $base = (empty($_SERVER["HTTPS"]) ? "http://" : "https://") . $_SERVER["HTTP_HOST"];
           //header('Location: ' . $base . '/student/menu/');
-          header('Location: ' . $base . '/kaizen/student/info.php');//this is for localhost. For server it will be changed to $base."/student/info.php"
+          header('Location: ' . $base . '/student/info.php');
           exit();
       }
   }
@@ -145,7 +145,7 @@ if (isset($_POST['register'])) {
 	<nav class="navbar navbar-expand-lg navbar-light fixed-top navbar-custom sticky">
 		<div class="container">
 			<a href="index.php" rel="home" class="main-logo">
-				<img src="../../assets/images/logo2.png" alt="kaizen2.0"  data-retina="assets/img/logo-small@2x.png" data-width="186" data-height="39">
+				<img src="../../assets/images/logo4.png" alt="kaizen2.0"  data-retina="assets/img/logo-small@2x.png" data-width="186" data-height="20">
 			</a>
 			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation"> <span class="ti-menu">
           </span>
@@ -222,12 +222,12 @@ if (isset($_POST['register'])) {
 						<h3 class="title">
                 <i class="fa fa-line-chart title-icon text-muted">
                 </i>
-                <span class="font-weight-bold">  KAIZEN2.0：MICROLEARNING WITH A DIGITAL BRAIN
+                <span class="font-weight-bold">  KAIZEN Mall
                 </span>
               </h3>
 					</div>
 					<div class="mt-3 mb-5">
-						<p class="explanation">The objective of Kaizen 2.0 is to pilot the use of a mobile internet-based, artificial intelligence-powered microlearning platform – to teach Japanese Kaizen processes to SMEs in order to improve productivity and managerial skills.</p>
+						<p class="explanation">KAIZEN Mall is to teach Japanese Kaizen processes to SMEs in order to improve productivity and managerial skills.</p>
 					</div>
 				</div>
 			</div>
@@ -313,7 +313,7 @@ if (isset($_POST['register'])) {
 						<br>
 						<div class="row align-items-center justify-content-center text-center">
 							<div class="col-lg-6 col-md-6 col-sm-12">
-								<p class="nav-expl">You fill up the assessment form for registration of Kaizen2.0 then administrator send your login ID & password by E-mail. After that you login to the platform and learn about Kaizen from the video lessons created by Japanese experts. </p>
+								<p class="nav-expl">You fill up the assessment form for registration of Kaizen Mall then administrator send your login ID & password by E-mail. After that you login to the platform and learn about Kaizen from the video lessons created by Japanese experts. </p>
 								<img src="../../assets/images/work1.jpg" alt="Image placeholder" class="img-fluid">
 							</div>
 							<div class="col-lg-6 col-md-6 col-sm-12">

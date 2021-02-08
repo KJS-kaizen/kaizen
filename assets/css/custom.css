@@ -1,36 +1,395 @@
-.video-pop {
-  position: fixed;
-  bottom: 0;
-  right: 15px;
-  width: 375px;
-  animation: from-bottom 2s;
-}
-.video-pop #closer {
-  text-align: right;
-}
-.video-pop .video-link {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  display: inline-block;
-  position: absolute;
-  z-index: 5;
+/*  Theme Name: Kaizen2.0 
+    Author: KJS
+    File Description: Main CSS file of the template
+*/
+
+/****************************
+*   1  :  NAVBAR-CUSTOM         *
+*   2  :  NAVBAR-CUSTOM     *
+*   3  :  HOME              *
+*   4  :  SERVICES          *
+*   5  :  FEATURES          *
+*   6  :  CLIENTS           *
+*   7  :  TEAM              *
+*   8  :  FAQ               *
+*   9  :  PRICING BOX       *
+*   10 :  CONTACT           *
+*   11 :  FOOTER            *
+*   12 :  RESPONSIVE        *
+*****************************/
+
+
+
+/*****************
+    1.NAVBAR Section-CUSTOM
+*****************/
+
+.bg-gradient1 {
+    background-color: rgb(159,42,99); 
 }
 
-.embed-container 
-{ 
-  position: relative; 
-  padding-bottom: 56.25%; 
-  height: 0; 
-  overflow: hidden; 
-  max-width: 100%; 
-  z-index: 4;
-} 
-.embed-container iframe, .embed-container object, .embed-container embed 
-{ 
+
+/*****************
+    1.News Section-CUSTOM
+*****************/
+
+.news{
+    width: 60% ;
+    background-color: #fff ;
+    padding: 60px 50px 40px 50px ;
+    display: table-cell ;
+    
+}
+
+.enquiery{
+    width: 40% ;
+    background-color: #fff;
+    padding: 60px 50px 40px 50px ;
+    display: table-cell ;
+}
+
+.pb_accordion .item > a {
+    display: block;
+    border-bottom: 1px solid #e9ecef;
+    padding: 10px 0;
+    position: relative;
+    color: #495057;
+    
+   }
+    .pb_accordion .item > a:after {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      -webkit-transform: translateY(-50%);
+      -ms-transform: translateY(-50%);
+      transform: translateY(-50%);
+      font-family: 'themify';
+      speak: none;
+      font-style: normal;
+      font-weight: normal;
+      font-variant: normal;
+      text-transform: none;
+      line-height: 1;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      content: "\e61a"; }
+    .pb_accordion .item > a[aria-expanded="true"] {
+      color: #1d82ff;
+      border-bottom: 1px solid transparent; }
+      .pb_accordion .item > a[aria-expanded="true"]:after {
+        content: "\e622"; }
+  
+  .pb_accordion .item > div *:last-child {
+    margin-bottom: 0; }
+  
+
+.container-fluid .pb_accordion .day{
+    float: left ;
+    background-color: #9E9E9E  ;
+    padding: 3px 7px ;
+    margin-right: 5px ;
+    margin-bottom: 0 ;
+    color: #fff ;
+    font-weight: 500 ;
+    font-size: 1rem ;
+}
+.container-fluid .pb_accordion .news-title{
+    font-size: 1.2rem ;
+    transition: all 0.2s ;
+    margin-bottom: 0 ;
+    font-family: 'Poppins', sans-serif;
+
+/*    text-indent: 1em;*/
+}
+
+.pb_height-100{
+    height:100px!important
+}
+
+
+div#pb_faq {
+    width:100%;
+    height: 600px;
+    margin: 20px auto;
+    padding: 10px;
+    overflow-y:scroll;
+}
+
+/* captcha design */
+
+
+
+section { padding: 0 0; }
+
+.CaptchaWrap { position: relative; }
+.CaptchaTxtField { 
+  border-radius: 5px; 
+  /* border: 1px solid #ccc;  */
+  display: block;  
+  box-sizing: border-box;
+}
+
+#UserCaptchaCode { 
+  /* padding: 1px 10px;  */
+  outline: none;
+  font-weight: normal; 
+  font-family: 'Open Sans', sans-serif;
+}
+#CaptchaImageCode { 
+  text-align:center;
+  margin-top: 15px;
+  padding: 0px 0;
+  width: 240px;
+  overflow: hidden;
+}
+
+.capcode { 
+  font-size: 46px; 
+  display: block; 
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  user-select: none; 
+  cursor: default;
+  letter-spacing: 1px;
+  color: #ccc;
+  font-family: 'Roboto Slab', serif;
+  font-weight: 100;
+  font-style: italic;
+}
+
+.ReloadBtn { 
+  background:url('https://cdn3.iconfinder.com/data/icons/basic-interface/100/update-64.png') left top no-repeat;   
+  background-size : 100%;
+  width: 32px; 
+  height: 32px;
+  border: 0px; 
+  outline:none;
   position: absolute; 
-  top: 0; 
-  left: 0; 
-  width: 100%; 
-  height: 100%; 
+  bottom: 30px;
+  left : 250px;
+  outline: none;
+  cursor: pointer; /**/
+}
+.btnSubmit {
+  margin-top: 15px;
+  border: 0px;
+  padding: 10px 20px; 
+  border-radius: 5px;
+  font-size: 18px;
+  background-color: #1285c4;
+  color: #fff;
+  cursor: pointer;
+}
+
+.error { 
+  color: red;
+  display: none; 
+}
+.success {
+  color: green;
+  font-size: 18px;
+  margin-bottom: 15px;
+  display: none;
+}
+
+
+
+@media (max-width: 991px){
+    .news{
+        padding: 40px 15px 30px 15px ;
+    }
+    .enquiery{
+        padding: 40px 15px 30px 15px ;
+    }
+    hr.style-six {
+        border: 0;
+        height: 0;
+        width : 100%;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    }
+}
+@media (max-width: 767px){
+    .news{
+        width: 100% ;
+    }
+    .enquiery{
+        width: 100% ;
+    }
+}
+
+.section1
+{
+    padding-bottom: 10px;
+    padding-top: 10px;
+    position: relative;
+    background-color: #fff;
+}
+/*****************
+    1.Footer Section-CUSTOM
+*****************/
+
+
+.bg-footer {
+    background-color: rgb(145,38,143); 
+}
+
+
+.footer1{
+    color: white;
+    background-color: rgb(145,38,143);
+    font-weight: 400;
+    font-size: 16px;
+}
+
+.footer1 .companyname{
+    color: black;
+    font-weight: 700;
+    font-size:16px;
+
+}
+
+.pb_form_v1 {
+    padding: 50px;
+    -webkit-box-shadow: 1px 11px 68px -20px rgba(0, 0, 0, 0.75);
+    -moz-box-shadow: 1px 11px 68px -20px rgba(0, 0, 0, 0.75);
+    box-shadow: 1px 11px 68px -20px rgba(0, 0, 0, 0.75); }
+
+@media (max-width: 991px) 
+{
+    .pb_form_v1 
+    {
+        padding: 30px;
+        margin: 0 auto; 
+    } 
+}
+
+@media (max-width: 767px) 
+{
+    .pb_form_v1 
+    {
+        padding: 30px;
+        width :300px;
+          
+    } 
+}
+
+.pb_form_join {
+    padding: 50px;
+    -webkit-box-shadow: 1px 11px 68px -20px rgba(0, 0, 0, 0.75);
+    -moz-box-shadow: 1px 11px 68px -20px rgba(0, 0, 0, 0.75);
+    box-shadow: 1px 11px 68px -20px rgba(0, 0, 0, 0.75); }
+
+@media (max-width: 991px) 
+{
+    .pb_form_join
+    {
+        padding: 30px;
+        width : 400px; 
+        margin: 0 auto;
+    } 
+}
+
+@media (max-width: 767px) 
+{
+    .pb_form_join 
+    {
+        padding: 30px;
+        width :300px;
+        
+          
+    } 
+}
+
+
+.video-center {
+    margin-left: auto;
+    margin-right: 10px;
+    display: flex;
+    }
+
+.address
+{
+    color: white;
+    font-weight: 300;
+    font-size:16px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.bg-footer1 {
+    background-color: #fff ; 
+}
+
+
+.footer2{
+    color: #000;
+    background-color: #fff;
+    font-weight: 400;
+    font-size: 16px;
+}
+
+.footer2 .companyname{
+    color: black;
+    font-weight: 700;
+    font-size:16px;
+    font-family: 'Poppins', sans-serif;
+
+}
+
+.section2
+{
+    padding-bottom: 0px;
+    padding-top: 0px;
+    position: relative;
+    background-color: #fff;
+}
+
+
+
+@media (min-width: 992px){
+  
+    hr.style-six {
+        display: none;
+    }
+  }
+
+/*****************
+    logo  Section-CUSTOM
+*****************/
+
+
+
+  
+    .main-logo img
+  {
+    width: 200px;
+  
+  }
+
+  .foot_logo_size
+  {
+     height: 160px;
+  }
+  
+
+@media (max-width: 767px){
+  
+  .main-logo img
+{
+  width: 200px;
+
+}
+}
+  
+
+
+
+/*****************
+    Nav Link  Section-CUSTOM
+*****************/
+
+
+summary .col-4
+{
+    padding: 0;
 }

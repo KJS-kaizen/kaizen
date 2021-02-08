@@ -46,11 +46,9 @@ if(isset($_POST['submit']))// submit form data in .txt file
                 
             </div>
             <br>
-            <p><h4>Having trouble? <a href="https://kaizen2.net/student/auth/#section-enquiery">Contact us</a></h4></p>
             <hr>
         </div>
     </div>
     </div>
 </body>
-
 </html>
