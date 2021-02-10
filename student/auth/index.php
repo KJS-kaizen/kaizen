@@ -102,7 +102,7 @@ if (isset($_POST['register'])) {
           //$_SESSION['auth']['level'] = 'student';
           $base = (empty($_SERVER["HTTPS"]) ? "http://" : "https://") . $_SERVER["HTTP_HOST"];
           //header('Location: ' . $base . '/student/menu/');
-          header('Location: ' . $base . '/student/info.php');
+          header('Location: ' . $base . '/kaizen/student/info.php');//this is for localhost. For server it will be changed to $base."/student/info.php"
           exit();
       }
   }

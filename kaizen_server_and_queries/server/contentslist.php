@@ -1,0 +1,2707 @@
+<?php
+require_once "../config.php";
+require_once './contents/class.tbwp3_access.php';
+
+//login_check('/admin/auth/');
+date_default_timezone_set('Asia/Dhaka');
+$result_grade = '';
+$result_classroom = '';
+$result_course = '';
+
+$curl  = new Curl($url);
+$tbwp3 = new Tbwp3Access();
+//debug($_SESSION);
+
+if (isset($_SESSION['auth']['student_id'])) {
+    $student_id = $_SESSION['auth']['student_id'];
+}
+
+if (isset($_SESSION['auth']['school_id'])) {
+    $school_id = $_SESSION['auth']['school_id'];
+}
+
+
+
+//------CSV読込部分 ここから------CSV reading part From here
+error_reporting(~E_NOTICE);
+$path = '../library/category/'; //カテゴリーPHPライブラリの場所（※必須）Category PHP library location (* required)
+$csvpath = $path . 'csv/'; //CSVファイルの場所 CSV file location
+$_POST['csvfile'] = $csvpath . 'contents.csv';
+
+//カテゴリー計算用ファイルを読込み Load category calculation file
+require_once(dirname(__FILE__) . '/' . $path . 'catecalc.php');
+
+//CSVファイルを読み込み「UTF-8」に変換 Read CSV file and convert to "UTF-8"
+$lines = @file($_POST['csvfile'], FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+if(!$lines) { $lines = array(); }
+mb_convert_variables('UTF-8', 'SJIS-win', $lines);
+//先頭の2行を削除して詰める Remove the first two lines and stuff
+unset($lines[0], $lines[1]);
+
+if(filter_input(INPUT_GET, "bid")) {
+    $subject_section_id = $_GET['bid'];
+    $subject_section_name = $temp02[$subject_section_id];
+    $subject_genre_id = $temp05[$subject_section_id];
+    $subject_genre_name = $temp02[$temp05[$subject_section_id]];
+} else {
+    $subject_section_id = 0;
+//    $subject_section_name = 'カテゴリー中';
+    $subject_genre_id = 0;
+//    $subject_genre_name = 'カテゴリー大';
+}
+//debug($subject_section_id);
+
+list($string, $check) = array_to_string((array)$subject_section_id);
+$bit_classroom = $string;
+
+//------CSV読込部分 ここまで------CSV reading up to here
+
+/* For unlocking Lessons */
+// function get_Show_cat_Result()
+// {
+//     include('../news/includes/config.php');
+//     $sqlQuery = "SELECT t2.bit_classroom FROM (SELECT ceil(COUNT(school_id)/2) AS CONT_RESULT,bit_classroom FROM tbl_contents AS a  WHERE a.enable=1   GROUP BY a.bit_classroom) t1 INNER JOIN (SELECT b.bit_classroom ,COUNT(DISTINCT a.school_contents_id) AS A1 FROM log_contents_history_student AS a INNER JOIN tbl_contents AS b WHERE a.school_contents_id=b.contents_id AND a.student_id=".$GLOBALS['student_id']." AND b.enable=1 GROUP BY b.bit_classroom) t2 where t1.bit_classroom=t2.bit_classroom AND t2.A1>=t1.CONT_RESULT";
+//     $sql = mysqli_query($con,$sqlQuery);
+//     $finsishedLesson = [];
+//     while ($row = mysqli_fetch_assoc($sql)) 
+//     {
+//         $resultvalue= explode("-", $row['bit_classroom']);
+//         $csvvalue= count($resultvalue)."-0x".$resultvalue[count($resultvalue)-1];
+//         array_push($finsishedLesson,$csvvalue);
+ 
+//     }
+//     return $finsishedLesson;
+// }
+/* For unlocking Lessons */
+
+
+// /* For New Icon */
+
+// function get_new_icon_Result()
+// {
+//     include('../news/includes/config.php');
+//     $sqlQuery = "SELECT t1_1.bit_classroom
+//     FROM (select t1.bit_classroom
+//     FROM tbl_quiz t1 INNER JOIN tbl_quiz_answer t2
+//     ON t1.quiz_id = t2.quiz_id where t2.student_id = ".$GLOBALS['student_id']." GROUP BY t1.bit_classroom) AS t1_1
+//     UNION
+//     SELECT t1_2.bit_classroom
+//     FROM (SELECT t1.bit_classroom
+//     FROM (SELECT b.bit_classroom ,a.school_contents_id,a.student_id  
+//     FROM log_contents_history_student AS a 
+//     INNER JOIN 
+//     tbl_contents AS b 
+//     WHERE a.school_contents_id=b.contents_id AND b.enable=1 AND a.student_id=".$GLOBALS['student_id'].") AS t1 
+//         INNER JOIN 
+//     (SELECT contents_id ,bit_classroom FROM tbl_contents WHERE enable=1) AS t2 
+//     WHERE t1.school_contents_id=t2.contents_id GROUP BY t1.bit_classroom) AS t1_2";
+//     $sql = mysqli_query($con,$sqlQuery);
+//     $icon_remove_lesson = [];
+//     while ($row = mysqli_fetch_assoc($sql)) 
+//     {
+//         $resultvalue= explode("-", $row['bit_classroom']);
+//         $csvvalue= count($resultvalue)."-0x".$resultvalue[count($resultvalue)-1];
+//         array_push($icon_remove_lesson,$csvvalue);
+ 
+//     }
+//     return $icon_remove_lesson;
+// }
+// /* For New Icon */
+
+
+/*For Recommendation */
+function dbToCsvConverter($input)
+{
+    $split=explode("-",$input);
+    $t =  (string)count($split)."-0x".$split[count($split)-1];
+    return $t;
+}
+$contentsRecommendationList = [];   // contains only contents_id which should be recommended to user
+$subCategoryRecommendationList = [];    // contains only subcategory_id(in csv format) (those subcategory id whose contents_id has been recommended)  
+$categoryRecommendationList = [];       // contains only category_id(in csv format) (those category id whose subcategorie's contents_id has been recommended)
+$subCategoryContentsCount=[];           // it is an assosiative array which represents that which subcategory has how many recommended contents
+$recommendationTree = [];               // it is an associative array which represents the whole tree of recommended videos
+$catList = [];              // it is an list for recommended category (it is made as a solution for multiple language)
+$subCatList = [];           // it is an list for recommended subcategory (it is made as a solution for multiple language)
+// $servername = "localhost";
+// $username = "root";
+// $password = "";
+// $dbname = "kaizen";
+// $con = new mysqli($servername, $username, $password, $dbname);
+include('../news/includes/config.php');
+// if ($con->connect_error) {
+//     die("Connection failed: " . $con->connect_error);
+// }
+$sql = "SELECT t_1_0.contents_id
+FROM 
+	(SELECT cl2.contents_id ,cl1.answer_id
+	 FROM 
+		(SELECT quiz_id,query_id,answer_id 
+			FROM tbl_quiz_answer_query 
+			WHERE answer_id IN 
+			(SELECT t1.answer_id 
+			 FROM (SELECT m1.* FROM (SELECT * FROM tbl_quiz_answer WHERE student_id = ".$student_id.") m1 
+					left JOIN 
+					(SELECT * FROM tbl_quiz_answer WHERE student_id = ".$student_id.") m2 
+					ON m1.quiz_id=m2.quiz_id AND m1.register_datetime < m2.register_datetime WHERE m2.register_datetime IS NULL) t1 
+						INNER JOIN 
+					tbl_quiz t2 
+					ON ( t1.quiz_id=t2.quiz_id AND t2.enable=1)) AND flg_right = 0) cl1 
+	
+		INNER JOIN 
+			tbl_quiz_contents_mapping cl2 
+	ON (cl1.quiz_id=cl2.quiz_id AND cl1.query_id= cl2.query_id AND cl2.enable=1)) AS t_1_0
+INNER JOIN
+	tbl_contents AS t_1_1
+ON (t_1_0.contents_id = t_1_1.contents_id AND t_1_1.enable=1)
+
+WHERE t_1_0.contents_id
+NOT IN 
+(
+	SELECT t_2_0.contents_id
+	FROM
+		(SELECT ik1.contents_id
+		 from
+			(SELECT MAX(lt1.registered_datetime) AS contents_last_watch_time,lt1.school_contents_id AS contents_id,lt1.answer_id 
+			from
+				(SELECT ht.registered_datetime,ht.school_contents_id,sb.answer_id 
+				FROM 
+					(SELECT cl2.contents_id,cl1.answer_id
+					FROM (SELECT quiz_id,query_id,answer_id FROM tbl_quiz_answer_query WHERE answer_id IN 
+					(SELECT t1.answer_id FROM 
+						(SELECT m1.* FROM (SELECT * FROM tbl_quiz_answer WHERE student_id = ".$student_id.") m1 
+						left JOIN 
+						(SELECT * FROM tbl_quiz_answer WHERE student_id = ".$student_id.") m2 
+						ON m1.quiz_id=m2.quiz_id AND m1.register_datetime < m2.register_datetime WHERE m2.register_datetime IS NULL) t1 
+					INNER JOIN tbl_quiz t2 ON ( t1.quiz_id=t2.quiz_id AND t2.enable=1)) AND flg_right = 0) cl1 
+					
+					INNER JOIN tbl_quiz_contents_mapping cl2 
+					ON (cl1.quiz_id=cl2.quiz_id AND cl1.query_id= cl2.query_id AND cl2.enable=1)) as sb
+						INNER JOIN
+					log_contents_history_student AS ht
+					ON sb.contents_id=ht.school_contents_id AND ht.student_id=".$student_id.") lt1 
+					
+					GROUP BY lt1.school_contents_id) ik1
+			
+			INNER join
+			
+				tbl_quiz_answer ik2
+			
+			ON ik1.answer_id = ik2.answer_id AND ik2.register_datetime < ik1.contents_last_watch_time) AS t_2_0
+		
+		INNER join
+		
+		tbl_contents AS t_2_1
+		
+		ON t_2_1.enable=1 AND t_2_0.contents_id=t_2_1.contents_id
+);";
+//echo($sql);
+$result = $con->query($sql);
+if ($result->num_rows > 0) {
+    while($row = $result->fetch_assoc()) {
+       array_push($contentsRecommendationList,$row["contents_id"]); // inserting contents_id in $contentsRecommendationList array
+       $sql="select bit_classroom from tbl_contents where contents_id = ".$row['contents_id'];
+       $subResult = $con->query($sql);
+       while($subRow = $subResult->fetch_assoc())
+       {
+           $tmp = dbToCsvConverter($subRow["bit_classroom"]);   // subcategory id is converting to csv format from DB bit_classroom format
+           if(!isset($subCategoryContentsCount[$tmp]))
+           {
+               $subCategoryContentsCount[$tmp] = 1;             // how many recommended contents are there for a subcategory id that is counting here
+           }
+           else
+           {
+               $subCategoryContentsCount[$tmp]++;
+           }
+           if(!in_array($tmp,$subCategoryRecommendationList))
+           {
+               array_push($subCategoryRecommendationList,$tmp); // inserting subcategory id in $subCategoryRecommendationList
+           }
+           if(!in_array($csvRowC[$tmp],$categoryRecommendationList))
+           {
+               array_push($categoryRecommendationList,$csvRowC[$tmp]);  // inserting category id in $categoryRecommendationList
+           }
+           if(!isset($_GLOBALS['$tmpTree'][$csvRowC[$tmp]][$tmp]))                              // making the whole recommendation tree
+           {
+               $_GLOBALS['$tmpTree'][$csvRowC[$tmp]][$tmp]=array();
+               array_push($_GLOBALS['$tmpTree'][$csvRowC[$tmp]][$tmp],$row["contents_id"]);
+           }
+           else
+           {
+               array_push($_GLOBALS['$tmpTree'][$csvRowC[$tmp]][$tmp],$row["contents_id"]);
+           }
+       }
+    }
+}
+if(isset($_GLOBALS['$tmpTree']))
+{
+    $recommendationTree = $_GLOBALS['$tmpTree'];
+    unset($_GLOBALS['$tmpTree']);
+}
+foreach($recommendationTree as $key1=>$value1)
+{
+    foreach($value1 as $key2=>$value2)
+    {
+        if(count($value2) == 2)
+        {
+            in_array($key1,$catList)? :array_push($catList,$key1);
+            in_array($key2,$subCatList)? :array_push($subCatList,$key2);
+        }
+    }
+}
+print_r($contentsRecommendationList);
+echo("<br><br>subCatList:<br>");
+print_r($subCatList);
+echo("<br><br>tree :<br>");
+print_r($recommendationTree);
+echo("<br><br>CatList:<br>");
+print_r($catList);
+echo("<br><br>subCategoryRecommendationList:");
+print_r($subCategoryRecommendationList);
+echo("<br><br>categoryRecommendationList:");
+print_r($categoryRecommendationList);
+echo("<br><br>subCategoryContentsCount:");
+print_r($subCategoryContentsCount);
+/*For Recommendation */
+
+
+$studentInfo = new StudentContentsListModel($student_id, $school_id, $bit_classroom, $curl);
+
+//debug($studentInfo);
+
+// contents データ
+$contents_data = $studentInfo->getContents();
+// 2019/6/03 count関数対策 2019/6/03 count function countermeasure
+$contents_parameter_value = 0;
+if(is_countable($contents_data[0])){
+  $contents_parameter_value = count($contents_data[0]);
+}
+//$contents_parameter_value = count($contents_data[0]);
+
+for( $i = 0 ; $i < count($contents_data) ; $i++ ) {
+    $contents_data[$i] += $studentInfo->getContentsAttachment($contents_data[$i]);
+}
+
+// questionnaire データ
+$questionnaire_data = $studentInfo->getQuestionnaire(0);
+
+// report データ
+$report_data = $studentInfo->getQuestionnaire(1);
+
+// quiz データ
+$quiz_data = $studentInfo->getQuiz();
+
+//debug( $quiz_data );
+
+if(count($quiz_data) != 0) {
+    // 2019/6/03 count関数対策 2019/6/03 count function countermeasure
+    $quiz_parameter_value = 0;
+    if(is_countable($quiz_data[0])){
+      $quiz_parameter_value = count($quiz_data[0]);
+    }
+    //$quiz_parameter_value = count($quiz_data[0]);
+    //debug($quiz_parameter_value);
+    for( $i = 0 ; $i < count($quiz_data) ; $i++ ) {
+        $quiz_data[$i] += $studentInfo->getQuizAnswer($quiz_data[$i]);
+        // 2019/6/03 count関数対策 2019/6/03 count function countermeasure
+        $index = 0;
+        if(is_countable($quiz_data[$i])){
+          $index = count($quiz_data[$i]) - ($quiz_parameter_value + 1);
+        }
+
+        //$index = count($quiz_data[$i]) - ($quiz_parameter_value + 1);
+        if(isset($quiz_data[$i][$index])) {
+            if($quiz_data[$i][$index]['end_flag'] == 0){
+                $quiz_data[$i]['last_answer_id'] = $quiz_data[$i][$index]['answer_id'];
+            } else {
+                $quiz_data[$i]['last_answer_id'] = 0;
+            }
+        }
+    }
+}
+
+//debug( $quiz_data );
+// message データ
+//$message_data = $studentInfo->getMessage();
+//debug($message_data);
+
+$student_id = $_SESSION[ 'auth' ][ 'student_id' ];
+
+// subject データ
+//$subject_genre_name = 'カテゴリー大';
+//$subject_section_name = 'カテゴリー中';
+
+//$subject_data = $questionnaireInfo->getSubject();
+//$subject_parameter_value = count($subject_data[0]);
+//for( $i = 0 ; $i < count($subject_data) ; $i++ ) {
+//    $subject_data[$i] += $questionnaireInfo->getSubjectSection($subject_data[$i]);
+//    for( $j = 0 ; $j < count($subject_data[$i]) - $subject_parameter_value ; $j++ ) {
+//        if($subject_data[$i][$j]['subject_section_id'] == filter_input(INPUT_GET, "id")) {
+//            //debug($subject_data[$i][$j]['subject_section_name']);
+//            //debug($subject_data[$i]['subject_genre_name']);
+//            $subject_genre_id = $subject_data[$i]['subject_genre_id'];
+//            $subject_genre_name = $subject_data[$i]['subject_genre_name'];
+//            $subject_section_id = $subject_data[$i][$j]['subject_section_id'];
+//            $subject_section_name = $subject_data[$i][$j]['subject_section_name'];
+//        }
+//    }
+//}
+
+// function-group
+$function_data = $studentInfo->getFunctionGroup();
+
+$info_array = array();
+if(count($contents_data) != 0){
+    $info_array = array_merge($info_array,$contents_data);
+}
+if(count($questionnaire_data) != 0){
+    $info_array = array_merge($info_array,$questionnaire_data);
+}
+if(count($report_data) != 0){
+    $info_array = array_merge($info_array,$report_data);
+}
+if(count($quiz_data) != 0){
+    $info_array = array_merge($info_array,$quiz_data);
+}
+
+$result_data = [];
+$result_data = $info_array;
+
+foreach ( $result_data as $key =>  $data ) {
+
+  if ( $data[ 'type' ] == 3 ) {
+    if ( $result_data[ $key ][ 'repeat_challenge' ] == 0 ) {
+      // flg = 0 受けれる //Receive
+      $result_data[ $key ][ 'next_flg' ] = 0;
+    } else if ( $data[ 'repeat_challenge' ] > $data[ 'answer_count' ] ) {
+      $result_data[ $key ][ 'next_flg' ] = 0;
+    } else if ( $data[ 'repeat_challenge' ] == $data[ 'answer_count' ] ){
+      $result_data[ $key ][ 'next_flg' ] = 1;
+    }
+
+  } else if ( $data[ 'type' ] == 2 ) {
+    if ( $data[ 'answer_flg' ] == 0 ) {
+      $result_data[ $key ][ 'next_flg' ] = 0;
+    } else {
+      $result_data[ $key ][ 'next_flg' ] = 1;
+    }
+  } else if ( $data[ 'type' ] == 1 ) {
+    if ( $data[ 'answer_flg' ] == 0 ) {
+      $result_data[ $key ][ 'next_flg' ] = 0;
+    } else {
+      $result_data[ $key ][ 'next_flg' ] = 1;
+    }
+  }
+}
+
+if ( count( $function_data ) != 0 ) {
+  for ( $i = 0; $i <count( $function_data ); $i++ ) {
+    $k = 0;
+    for ( $j = 0; $j < count( $info_array ); $j++ ) {
+      if ( $function_data[ $i ][ 'primary_key' ] == $info_array[ $j ][ 'parent_function_group_id' ] ) {
+        $function_data[ $i ][ 'child_data' ][ $k ] = $info_array[ $j ];
+        array_splice( $info_array, $j, 1 );
+        $k++;
+        $j--;
+      }
+    }
+    $function_data[ $i ][ 'child_item' ] = $k;
+    $function_data[ $i ][ 'array_number' ] = $j + 1;
+  }
+  $info_array = array_merge( $info_array, $function_data );
+}
+
+for ( $i = 0; $i < count( $info_array ); $i++ ) {
+  $sort[ $i ][ 'display_order' ] = $info_array[ $i ][ 'display_order' ];
+  $sort[ $i ][ 'primary_key' ] = $info_array[ $i ][ 'primary_key' ];
+  $sort[ $i ][ 'type' ] = $info_array[ $i ][ 'type' ];
+
+  if ( $sort[ $i ][ 'type' ] == 4 ) {
+    for ( $j = 0; $j < $info_array[ $i ][ 'child_item' ]; $j++ ) {
+      $sort_child[ $i ][ $j ][ 'display_order' ] = $info_array[ $i ][ 'child_data' ][ $j ][ 'display_order' ];
+      $sort_child[ $i ][ $j ][ 'primary_key' ] = $info_array[ $i ][ 'child_data' ][ $j ][ 'primary_key' ];
+      $sort_child[ $i ][ $j ][ 'type' ] = $info_array[ $i ][ 'child_data' ][ $j ][ 'type' ];
+      $sort_child[ $i ][ $j ][ 'title' ] = $info_array[ $i ][ 'child_data' ][ $j ][ 'title' ];
+    }
+
+    if ( count( $sort_child[ $i ]) != 0 ) {
+      array_multisort( $sort_child[ $i ], SORT_DESC, $sort_child[ $i ] );
+    }
+
+    for ( $j = 0; $j < $info_array[ $i ][ 'child_item' ]; $j++ ) {
+      $info_array[ $i ][ 'child_data' ][ $j ][ 'display_order' ] = $sort_child[ $i ][ $j ][ 'display_order' ];
+      $info_array[ $i ][ 'child_data' ][ $j ][ 'primary_key' ] = $sort_child[ $i ][ $j ][ 'primary_key' ];
+      $info_array[ $i ][ 'child_data' ][ $j ][ 'type' ] = $sort_child[ $i ][ $j ][ 'type' ];
+      $info_array[ $i ][ 'child_data' ][ $j ][ 'title' ] = $sort_child[ $i ][ $j ][ 'title' ];
+    }
+  }
+}
+
+if ( isset( $sort )) {
+  array_multisort( $sort, SORT_DESC, $info_array );
+}
+
+foreach ( $info_array as $key =>  $info ) {
+
+  foreach ( $result_data as $key2 => $result ) {
+
+    if ( $info_array[ $key ][ 'type' ] != 4 ) {
+
+      if ( $info_array[ $key ][ 'type' ] == $result[ 'type' ] && $info_array[ $key ][ 'primary_key'] == $result[ 'primary_key' ] ) {
+        $info_array[ $key ] = $result_data[ $key2 ];
+      }
+    } else {
+      // 2019/6/03 count関数対策 2019/6/03 count function countermeasure
+      $child_count = 0;
+      if(is_countable($info_array[ $key ][ 'child_data' ])){
+        $child_count = count( $info_array[ $key ][ 'child_data' ] );
+      }
+      //$child_count = count( $info_array[ $key ][ 'child_data' ] );
+      for( $c = 0; $c < $child_count; $c++ ) {
+        if ( $info_array[ $key ][ 'child_data' ][ $c ][ 'type' ] == $result_data[ $key2 ][ 'type' ]
+          && $info_array[ $key ][ 'child_data' ][ $c ][ 'primary_key' ] == $result_data[ $key2 ][ 'primary_key' ] ) {
+
+              $info_array[ $key ][ 'child_data' ][ $c ] = $result_data[ $key2 ];
+              $info_array[ $key ][ 'child_data' ][ 'bid' ] = $subject_section_id;
+
+        }
+
+
+      }
+
+    }
+
+  }
+}
+
+// 2019/6/03 count関数対策 2019/6/03 count function countermeasure
+$i_count = 0;
+if(is_countable($info_array)){
+  $i_count = count( $info_array );
+}
+//$i_count = count( $info_array );
+$is = 0;
+for( $i = 0; $i < $i_count; $i++ ) {
+
+  if ( isset( $info_array[ $i ][ 'child_data' ] )) {
+    $_SESSION[ 'auth' ][ 'folder_data' ][ $is ] = $info_array[ $i ][ 'child_data' ];
+    $is++;
+  }
+}
+
+
+// 増えた配列分をプラス Plus the increased sequence
+$quiz_parameter_value = $quiz_parameter_value +1;
+
+//ファイルサイズ表示用 For file size display
+function size_format($size) {
+    //冗長性を持たせるため、HDDサイズレベル(TB)まで用意 Prepare up to HDD size level (TB) for redundancy
+    //実際は、150MB以上のファイルがあってはならない(仕様：コンテンツファイルサイズ < 150MB) In fact, there should be no files larger than 150MB (specifications: content file size <150MB)
+    $class = array("B","KB","MB","GB","TB");
+    $i = 0;
+    while ($size >= 1024) {
+        $i++;
+        $size = $size / 1024;
+    }
+    return number_format($size,($i ? 0 : 0),".",",").$class[$i];
+}
+?>
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Thinkboard LMS students</title>
+	<meta name="Author" content=""/>
+	<!-- viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<!-- favicon -->
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<!-- css -->
+	<link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+	<link rel="stylesheet" type="text/css" href="css/bootstrap-reboot.css">
+	<link rel="stylesheet" type="text/css" href="css/icon-font.css">
+    <link rel="stylesheet" type="text/css" href="css/common.css">
+    
+  <!--<link rel="stylesheet" href="./css/sweetalert-master/dist/sweetalert.css">-->
+    <link rel="stylesheet" type="text/css" href="css/contents.css">
+    <!-- js -->
+    <script src="../js/jquery-3.1.1.js"></script>
+    <!--<script type="text/javascript" src="./css/sweetalert-master/dist/sweetalert.min.js"></script>-->
+    <script src="../js/popper.min.js"></script>
+    <script src="js/bootstrap.js"></script>
+    <script src="js/script.js"></script>
+    <!--<script type="text/javascript" src="contents/js/contents_play.js"></script>-->
+</head>
+<body>
+
+<div id="wrap" data-studentID="<?php echo $_SESSION[ 'auth' ][ 'student_id' ];?>" data-schoolID="<?php echo $_SESSION[ 'auth' ][ 'school_id' ];?>">
+
+    <!-- header -->
+    <div id="header-bar">
+        <div id="header">
+            <!-- left -->
+            <div class="header-left">
+                <!-- h1 -->
+                <div class="h1">
+                    <a href="#">
+                        <h1><img src="images/logo.jpg" alt="ThinkBoard LMS"></h1>
+                    </a>
+                </div>
+                <!-- sub menu -->
+                <div class="header-submenu">
+                    <div class="btn-userinfomation dropdown">
+                        <a href="#" id="dropdownMenu-userinfo" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <p class="erea-icon"><span class="icon-user-student"></span></p>
+                            <p class="erea-username"><?php echo $_SESSION['auth']['student_name']; ?></p> <!-- ここにユーザーの名前が入ります Here is the name of the user-->
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenu-userinfo">
+                            <li class="PW">
+                                <a href="account.php">Change Password</a>
+                            </li>
+                            <li class="loguot">
+                                <a href="auth/logout.php">Logout</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="btn-help">
+                        <a href="help/TBLMS_Student.pdf"><span>help</span></a>
+                    </div>
+                </div>
+            </div>
+            <!-- right -->
+            <div class="header-right">
+                <nav class="nav-mainmenu">
+                    <ul>
+                        <li>
+                            <a href="info.php"><span>TOP</span></a>
+                        </li>
+                        <li class="active">
+                            <a href="contentslist.php"><span>Taking lectures</span></a>
+                        </li>
+                        <!-- <li>
+                            <a href="message/message_list.php?p=1"><span>message</span></a>
+                        </li> -->
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+    <!-- main container -->
+    <div id="container-maincontents" class="container-maincontents clearfix">
+        <!-- subject-list -->
+        <div id="player_wrap"></div>
+        <div class="erea-subject-list">
+            <div id="subject-list" class="subject-list navbar-expand-lg">
+                <!-- head -->
+                <div class="subject-list-head">
+                    <p><span><img src="images/icon_subjectlist.png"></span>Select content group</p>
+                </div>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <!-- body -->
+                <div class="subject-list-body collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul id="subject-list-accordion" class="subject-list-accordion">
+<!------CSV読込部分 ここから CSV reading part From here------>
+<?php
+$database = $_SESSION['auth']['bit_subject'];
+if($database) { list($check) = string_to_array($database); }
+
+//users.csv の load_csv必須 load_csv in users.csv is required
+list($csvTreeU,,, $csvRowDU) = load_csv($csvpath . 'users.csv', 0);
+
+for($current = count($csvTreeU); $current >= 1; $current--) {
+	foreach($csvTreeU[$current] as $value) {
+		foreach($value as $line) {
+			$temp = explode('-', $line);
+			if($check[$temp[0]][log(hexdec($temp[1]), 2)]) {
+				$selectU .= $csvRowDU[$line] . '（' . $line . '）' . "\n";
+			}
+		}
+	}
+}
+
+foreach($lines as $line) {
+	$item = explode(',', $line);
+	$item[3] = str_replace('{c}', ',', $item[3]);
+
+	if(preg_match('/^[1-2]$/', $item[0])) {
+		$csvMenu[$item[0]][$item[2]][] = $item[1]; //
+		$csvParent[$item[1]] = $item[2];
+		$csvName[$item[1]] = $item[3]; //
+	}
+}
+
+for($current = count($csvMenu); $current >= 1; $current --) {
+	foreach($csvMenu[$current] as $key => $value) {
+		${'menu' . $current}[$key] .= '<ul class="';
+		${'menu' . $current}[$key] .= ($current == 1) ? 'accordion' : 'togglemenu';
+		if($key == $csvParent[$_GET['bid']]) { ${'menu' . $current}[$key] .= ' open'; }
+		${'menu' . $current}[$key] .= '">' . "\n";
+
+		foreach($value as $line) {
+			if($csvMenu[$current + 1][$line]) {
+				if(${'menu' . ($current + 1)}[$line] != '<ul class="togglemenu">' . "\n" . '</ul>' . "\n") { //空項目を無視 //Ignore empty items
+					${'menu' . $current}[$key] .= '<li';
+					if($line == $csvParent[$_GET['bid']]) {
+						${'menu' . $current}[$key] .= ' class="open"';
+						$subject_genre_name = $csvName[$line];
+                    }
+                    $parentLabel = (in_array($line,$catList)) ? '<span class="recommend">Recommend('.count($recommendationTree[$line]).')</span>':"";
+                    ${'menu' . $current}[$key] .= '>' . "\n" .'<a class="togglebtn">' . $csvName[$line] .$parentLabel. '</a>' . "\n";
+					${'menu' . $current}[$key] .= ${'menu' . ($current + 1)}[$line] .'</li>' . "\n"; //子項目を挿入 Insert child item
+				}
+			} else {
+                // /* For Unlocking */
+                // $finsishedLesson = get_Show_cat_Result();
+                // $unlockedLesson = [];
+                // for($i=0;$i<count($finsishedLesson);$i++)
+                // {
+                //     if(isset($finsishedLesson[$i]) && isset($csvTree[2][$csvRowC[$finsishedLesson[$i]]]))
+                //     {
+                //         if(isset($csvTree[2][$csvRowC[$finsishedLesson[$i]]][array_search($finsishedLesson[$i],$csvTree[2][$csvRowC[$finsishedLesson[$i]]])+1]))
+                //         array_push($unlockedLesson,$csvTree[2][$csvRowC[$finsishedLesson[$i]]][array_search($finsishedLesson[$i],$csvTree[2][$csvRowC[$finsishedLesson[$i]]])+1]);
+                //     }
+                    
+                // }
+                // $LS = $csvTree[2][$key][0];
+
+                
+                // /* For New Icon */
+                // $icon_remove_lesson = get_new_icon_Result();
+                // $icon = (in_array($line,$icon_remove_lesson)|| ($line ==$LS)) ? "":"<span class='recommend'>New</span>";
+                // /* For New Icon */
+
+
+                // if($LS == $line || in_array($line,$unlockedLesson))
+                // {                                                                   /* For Unlocking */
+                    if(search_multi($csvpath . 'contents.csv', $line, $csvTreeU, $selectU)) { //CSV照合 CSV collation
+                        ${'menu' . $current}[$key] .= '<li';
+                        if($line == $_GET['bid']) {
+                            ${'menu' . $current}[$key] .= ' class="active"';
+                            $subject_section_name = $csvName[$line];
+                        }
+                        $childLabel = (in_array($line,$subCatList)) ? "<span class='new'>Re</span>":""; /* For Recommendation */
+                        //$colorForchild = (in_array($line,$subCatList)) ? 'style="color:blue;"':""; /* For Recommendation */
+                        ${'menu' . $current}[$key] .= '><a href="' . $_SERVER['SCRIPT_NAME'] . '?bid=' . $line . '">' . $childLabel . $csvName[$line] .'</a></li>' . "\n";
+                     }
+                //}
+			}
+		}
+		${'menu' . $current}[$key] .= '</ul>' . "\n";
+	}
+}
+echo $menu1[''];
+?>
+<!------CSV読込部分 ここまで CSV reading up to here------>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- contents list -->
+        <div id="contents-list" class="contents-list">
+            <!-- subject not select(コンテンツグループ未選択時に表示) -->
+            <!-- <div class="contents-list-notselect">
+                <p>コンテンツグループを選んでください。</p>
+            </div> -->
+            <!-- title -->
+            <div class="contents-list-head">
+                <div class="subject-selecttitle">
+<?php
+	if($subject_genre_name && $subject_section_name) {
+		echo '<span>' . $subject_genre_name .'</span>' . "\n";
+		echo '<span>' . $subject_section_name . '</span>' . "\n";
+	}
+?>
+                </div>
+                <div class="btn-sort dropdown-contentssort">
+                    <button id="dropdownMenu-contentssort" data-toggle="dropdown" class="dropdown">Refine</button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenu-contentssort">
+                        <ul>
+                            <li class="sort-dummy-01 all-sort"><a>All</a></li>
+                            <li class="sort-dummy-02 contents"><a>Video class</a></li>
+                            <li class="sort-dummy-03 test"><a>Quiz</a></li>
+                            <li class="sort-dummy-04 questionnaire"><a>Questionnaire</a></li>
+                            <li class="sort-dummy-05 report"><a>Report</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!-- body -->
+            <div class="contents-list-body">
+
+                <div>
+                    <!-- contents group title -->
+                    <!--
+                    <div class="contentsgroup-title">
+                        <p>Lecture groupタイトル</p>
+                    </div>
+                     -->
+
+                    <?php if(count($info_array) != 0) { ?>
+                        <?php foreach ((array) $info_array as $item): ?>
+                            <?php
+                                if($item['bit_classroom'] == $bit_classroom) {
+
+                                    switch ($item['type']) {
+                                    case 0:
+                                        if ($item['contents_extension_id'] <= 6) {
+                                            echo "
+                                                <!-- contents item = TB -->
+                                                <div class='list-dummy-01 contents-item tb'>
+                                                    <div class='in'>
+                                                        <div class='title'>
+                                                            <a class='tb3_play' href='contents/contents_play.php?c_id=" .$item[ 'primary_key' ]. "&bid=" . $_GET['bid'] ."&s_id=" .$student_id . "&e_id=" . $item[ 'contents_extension_id' ] ."'
+                                                                data-contentID=".$item[ 'primary_key' ]."
+                                                                data-extensionID=".$item[ 'contents_extension_id' ]."
+                                                                data-title=".$item[ 'title' ].">". $item['title'] ."
+                                                            </a>
+                                                        </div>
+                                                        <div class='detail-info'>
+                                                            <div class='important-info'>
+                                                                <span class='count'>" . $item['watch_count'] . "Times</span>
+                                            ";
+                                                                if($item['play_start_datetime'] == '0000-00-00 00:00:00') {
+                                                                    echo "<span class='contents-time'>Not watched</span>";
+                                                                } else {
+                                                                    echo "<span class='contents-time'>".$item['play_start_datetime']."</span>";
+                                                                }
+                                            echo "
+                                                            </div>
+                                                            <div class='others'>
+                                            ";
+                                                                if($item['proportion_flg'] == 0 && $item['proportion'] == '') {
+                                                                    echo "<div class='progress incomplete'>Not watched</div>";
+                                                                } else if($item['proportion_flg'] == 0 && $item['proportion'] != '') {
+                                                                    echo "<div class='progress midstream'>" . $item['proportion'] . "%</div>";
+                                                                } else if($item['proportion_flg'] == 1 && $item['proportion'] != '') {
+                                                                    echo "<div class='progress complete'>" . $item['proportion'] . "%</div>";
+                                                                }
+                                            echo "
+                                                                <ul class='btns'>
+                                                                    <li class='play'><a class='tb3_play' href='contents/contents_play.php?c_id=" .$item[ 'primary_key' ]. "&bid=" . $_GET['bid'] ."&s_id=" .$student_id . "&e_id=" . $item[ 'contents_extension_id' ] ."'
+                                                                    data-contentID=".$item[ 'primary_key' ]."
+                                                                    data-extensionID=".$item[ 'contents_extension_id' ]."
+                                                                    data-title=".$item[ 'title' ]."></data></a></data></li><!-- 再生 -->
+                                                                    <li class='reacquire'><button id='reacquire_btn' class='reacquire_results' data-bid=".$_GET['bid']." data-studentID=".$student_id." data-contentID2=".$item[ 'primary_key' ]." data-extensionID2=".$item[ 'contents_extension_id' ]."'></button></li><!-- ログ再取得 -->
+                                                                    <li class='info'><button id='motal_contents' class='contents_info' data-bid=".$_GET['bid']." data-studentID=".$student_id." data-contentID2=".$item[ 'primary_key' ]." data-extensionID2=".$item[ 'contents_extension_id' ]."  data-toggle='modal' data-target='#Modal-contentsinfo-tb-id=" . $item['primary_key'] . "'></button></li><!-- 詳細 -->
+                                            ";
+                                                                        for($i = 0; $i < count($item) - $contents_parameter_value ; $i++) {
+                                                                            echo "
+                                                                                <li class='file'>
+                                                                                    <form
+                                                                                          action='" . $url . "download_attachment.php'
+                                                                                          method='post'
+                                                                                          target='hidden-iframe'
+                                                                                          >
+                                                                                        <input type='hidden' name='id' value=" .$item[$i]['contents_attachment_id']. ">
+                                                                                        <input type='hidden' name='name' value=" .$item[$i]['file_name']. ">
+                                                                                        <input type='submit' value=''>
+                                                                                    </form>
+                                                                                </li>
+                                                                            ";
+                                                                        }
+                                            echo "
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            <!-- modal(コンテンツ詳細-TB) -->
+                                            <div class='modal fade contentsinfo tb' id='Modal-contentsinfo-tb-id=" . $item['primary_key'] . "' tabindex='-1' role='dialog' aria-hidden='true'>
+                                                <div class='modal-dialog' role='document'>
+                                                    <div class='modal-content'>
+                                                        <div class='modal-header'>
+                                                            <p class='icon'></p>
+                                                            <p class='contents-type'>Video class(TB format)</p>
+                                                            <p class='contents-title'>" . $item['title'] . "</p>
+                                                            <button type='button' id='contents_close' class='close' data-dismiss='modal' aria-label='Close'>
+                                                                <span aria-hidden='true'>&times;</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class='modal-body contentsinfo'>
+                                                            <div class='body-left'>
+                                                                <div class='btngroup'>
+                                                                    <ul>
+                                                                        <li class='play'><a class='tb3_play' href='contents/contents_play.php?c_id=" .$item[ 'primary_key' ]. "&bid=" . $_GET['bid'] ."&s_id=" .$student_id . "&e_id=" . $item[ 'contents_extension_id' ] ."'
+                                                                          data-contentID=".$item[ 'primary_key' ]."
+                                                                          data-extensionID=".$item[ 'contents_extension_id' ]."
+                                                                          data-title=".$item[ 'title' ].">Play</a></li>
+                                            ";
+                                                                        for($i = 0; $i < count($item) - $contents_parameter_value ; $i++) {
+                                                                            echo "
+                                                                                <li class='file'>
+                                                                                    <form
+                                                                                          action='" . $url . "download_attachment.php'
+                                                                                          method='post'
+                                                                                          target='hidden-iframe'
+                                                                                          >
+                                                                                        <input type='hidden' name='id' value=" .$item[$i]['contents_attachment_id']. ">
+                                                                                        <input type='hidden' name='name' value=" .$item[$i]['file_name']. ">
+                                                                                        <input type='submit' value=''>
+                                                                                        Attached file
+                                                                                    </form>
+                                                                                </li>
+                                                                            ";
+                                                                        }
+                                            echo "
+                                                                    </ul>
+                                                                </div>
+                                                                <div class='contents-position'>
+                                                                    <div class='head'>Category・Folder</div>.
+                                                                    <div class='subject'>
+                                                                        <ol>
+                                                                           <li><span><img src='images/icon_subjectlist.png'></span>" . $subject_genre_name ."</li>
+                                                                           <li>" . $subject_section_name ."</li>
+                                                                        </ol>
+                                                                    </div>
+                                                                    <div class='contentsgroup'>
+                                                                        <p><span><img src='images/icon_contentsgroup.png'>Lecture group</span></p>
+                                                                    </div>
+                                                                </div>
+                                                                <div class='contents-relation'>
+                                                                    <div class='head'>Related content</div>
+                                                                    <ul>
+                                                                        <li>TB</li>
+                                                                        <li>MP4</li>
+                                                                        <li>Quiz</li>
+                                                                        <li>Questionnaire</li>
+                                                                        <li>Report</li>
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+                                                            <div class='body-right'>
+                                                                <div class='other-detail'>
+                                                                    <table>
+                                                                        <tr>
+                                                                            <th>Viewing status</th>
+                                            ";
+                                                                            if($item['proportion'] == '') {
+                                                                                echo "<td>Not watched</td>";
+                                                                            } else {
+                                                                                echo "<td>" . $item['proportion'] . "％</td>";
+                                                                            }
+                                            echo "
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th>Last viewing history</th>
+                                            ";
+                                                                            if($item['play_start_datetime'] == '0000-00-00 00:00:00') {
+                                                                                echo "<td>Not watched</td>";
+                                                                            } else {
+                                                                                echo "<td>" . $item['play_start_datetime'] . "</td>";
+                                                                            }
+                                            echo "
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th>Deadline for viewing</th>
+                                            ";
+                                                                            if($item['first_day'] == '0000-01-01' && $item['last_day'] == '9999-12-31') {
+                                                                                echo "<td>Related thread</td>";
+                                                                            } else if($item['first_day'] != '0000-01-01' && $item['last_day'] == '9999-12-31') {
+                                                                                echo "<td>" . $item['first_day'] . " ～ </td>";
+                                                                            } else if($item['first_day'] == '0000-01-01' && $item['last_day'] != '9999-12-31') {
+                                                                                echo "<td> ～ " . $item['last_day'] . "</td>";
+                                                                            } else {
+                                                                                echo "<td>" . $item['first_day'] . " ～ " . $item['last_day'] . "</td>";
+                                                                            }
+                                            echo "
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th>Number of attendance</th>
+                                                                            <td>" . $item['watch_count'] . "Times</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th>capacity</th>
+                                                                            <td>" . size_format($item['size']) . "</td>
+                                                                        </tr>
+                                                                        <!--
+                                                                        <tr class='message'>
+                                                                            <th>Contributor</th>
+                                                                            <td><div class='linkbtn'><a>KJS teacher</a></div></td>
+                                                                        </tr>
+                                                                        <tr class='message'>
+                                                                            <th>Related thread</th>
+                                                                            <td>
+                                                                                <div class='linkbtn'><a>Thread 01</a></div>
+                                                                                <div class='linkbtn'><a>Thread 02</a></div>
+                                                                                <div class='linkbtn'><a>Thread 03</a></div>
+                                                                            </td>
+                                                                        </tr>
+                                                                        -->
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            ";
+                                        } else {
+                                            echo "
+                                                <!-- contents item = MP4 -->
+                                                <div class='list-dummy-01 contents-item mp4'>
+                                                    <div class='in'>
+                                                        <div class='title'>
+                                                            <a class='tb3_play' href='contents/contents_play.php?c_id=" .$item[ 'primary_key' ]. "&bid=" . $_GET['bid'] ."&s_id=" .$student_id . "&e_id=" . $item[ 'contents_extension_id' ] ."'
+                                                                data-contentID=".$item[ 'primary_key' ]."
+                                                                data-extensionID=".$item[ 'contents_extension_id' ]."
+                                                                data-title=".$item[ 'title' ].">" . $item['title']."
+                                                            </a>
+                                                        </div>
+                                                        <div class='detail-info'>
+                                                            <div class='important-info'>
+                                                                <span class='count'>" . $item['watch_count'] . "Times</span>
+                                            ";
+                                                                if($item['play_start_datetime'] == '0000-00-00 00:00:00') {
+                                                                    echo "<span class='contents-time'>Not watched</span>";
+                                                                } else {
+                                                                    echo "<span class='contents-time'>".$item['play_start_datetime']."</span>";
+                                                                }
+                                            echo "
+                                                            </div>
+                                                            <div class='others'>
+                                            ";
+                                                                if($item['proportion_flg'] == 0 && $item['proportion'] == '') {
+                                                                    echo "<div class='progress incomplete'>Not watched</div>";
+                                                                } else if($item['proportion_flg'] == 0 && $item['proportion'] != '') {
+                                                                    echo "<div class='progress midstream'>" . $item['proportion'] . "%</div>";
+                                                                } else if($item['proportion_flg'] == 1 && $item['proportion'] != '') {
+                                                                    echo "<div class='progress complete'>" . $item['proportion'] . "%</div>";
+                                                                }
+                                            echo "
+                                                                <ul class='btns'>
+                                                                    <li class='play'>
+                                                                      <a class='tb3_play' href='contents/contents_play.php?c_id=" .$item[ 'primary_key' ]. "&bid=" . $_GET['bid'] . "&s_id=" .$student_id . "&e_id=" . $item[ 'contents_extension_id' ] ."'
+                                                                      data-contentID=".$item[ 'primary_key' ]."
+                                                                      data-extensionID=".$item[ 'contents_extension_id' ]."
+                                                                      data-title=".$item[ 'title' ]."></data></a></li><!-- 再生 -->
+                                                                    <li class='reacquire'><button id='reacquire_mp4' class='reacquire_results' data-bid=".$_GET['bid']." data-studentID=".$student_id." data-contentID2=".$item[ 'primary_key' ]." data-extensionID2=".$item[ 'contents_extension_id' ]."'></button></li><!-- ログ再取得 Log reacquisition-->
+                                                                    <li class='info'><button data-toggle='modal' class='contents_info' data-bid=".$_GET['bid']." data-studentID=".$student_id." data-contentID2=".$item[ 'primary_key' ]." data-extensionID2=".$item[ 'contents_extension_id' ]." data-target='#Modal-contentsinfo-mp4-id=" . $item['primary_key'] . "'></button></li><!-- 詳細 Details-->
+                                            ";
+                                                                        for($i = 0; $i < count($item) - $contents_parameter_value ; $i++) {
+                                                                            echo "
+                                                                                <li class='file'>
+                                                                                    <form
+                                                                                          action='" . $url . "download_attachment.php'
+                                                                                          method='post'
+                                                                                          target='hidden-iframe'
+                                                                                          >
+                                                                                        <input type='hidden' name='id' value=" .$item[$i]['contents_attachment_id']. ">
+                                                                                        <input type='hidden' name='name' value=" .$item[$i]['file_name']. ">
+                                                                                        <input type='submit' value=''>
+                                                                                    </form>
+                                                                                </li>
+                                                                            ";
+                                                                        }
+                                            echo "
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            <!-- modal(コンテンツ詳細-MP4) -->
+                                            <div class='modal fade contentsinfo mp4' id='Modal-contentsinfo-mp4-id=" . $item['primary_key'] . "' tabindex='-1' role='dialog' aria-hidden='true'>
+                                                <div class='modal-dialog' role='document'>
+                                                    <div class='modal-content'>
+                                                        <div class='modal-header'>
+                                                            <p class='icon'></p>
+                                                            <p class='contents-type'>Video class(MP4 format)</p>
+                                                            <p class='contents-title'>" . $item['title'] . "</p>
+                                                            <button type='button' class='close' data-dismiss='modal' aria-label='Close'>
+                                                                <span aria-hidden='true'>&times;</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class='modal-body contentsinfo'>
+                                                            <div class='body-left'>
+                                                                <div class='btngroup'>
+                                                                    <ul>
+                                                                        <li class='play'><a class='tb3_play' href='contents/contents_play.php?c_id=" .$item[ 'primary_key' ]. "&bid=" . $_GET['bid'] . "&s_id=" .$student_id . "&e_id=" . $item[ 'contents_extension_id' ] ."'
+                                                                          data-contentID=".$item[ 'primary_key' ]."
+                                                                          data-extensionID=".$item[ 'contents_extension_id' ]."
+                                                                          data-title=".$item[ 'title' ].">Play</a></li>
+                                            ";
+                                                                        for($i = 0; $i < count($item) - $contents_parameter_value ; $i++) {
+                                                                            echo "
+                                                                                <li class='file'>
+                                                                                    <form
+                                                                                          action='" . $url . "download_attachment.php'
+                                                                                          method='post'
+                                                                                          target='hidden-iframe'
+                                                                                          >
+                                                                                        <input type='hidden' name='id' value=" .$item[$i]['contents_attachment_id']. ">
+                                                                                        <input type='hidden' name='name' value=" .$item[$i]['file_name']. ">
+                                                                                        <input type='submit' value=''>
+                                                                                        Attached file
+                                                                                    </form>
+                                                                                </li>
+                                                                            ";
+                                                                        }
+                                            echo "
+                                                                    </ul>
+                                                                </div>
+                                                                <div class='contents-position'>
+                                                                    <div class='head'>Category・Folder</div>
+                                                                    <div class='subject'>
+                                                                        <ol>
+                                                                           <li><span><img src='images/icon_subjectlist.png'></span>" . $subject_genre_name ."</li>
+                                                                           <li>" . $subject_section_name ."</li>
+                                                                        </ol>
+                                                                    </div>
+                                                                    <div class='contentsgroup'>
+                                                                        <p><span><img src='images/icon_contentsgroup.png'>Lecture group</span></p>
+                                                                    </div>
+                                                                </div>
+                                                                <div class='contents-relation'>
+                                                                    <div class='head'>Related content</div>
+                                                                    <ul>
+                                                                        <li>TB</li>
+                                                                        <li>MP4</li>
+                                                                        <li>Quiz</li>
+                                                                        <li>Questionnaire</li>
+                                                                        <li>Report</li>
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+                                                            <div class='body-right'>
+                                                                <div class='other-detail'>
+                                                                    <table>
+                                                                        <tr>
+                                                                            <th>Viewing status</th>
+                                            ";
+                                                                            if($item['proportion'] == '') {
+                                                                                echo "<td>Not watched</td>";
+                                                                            } else {
+                                                                                echo "<td>" . $item['proportion'] . "％</td>";
+                                                                            }
+                                            echo "
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th>Last viewing history</th>
+                                            ";
+                                                                            if($item['play_start_datetime'] == '0000-00-00 00:00:00') {
+                                                                                echo "<td>Not watched</td>";
+                                                                            } else {
+                                                                                echo "<td>" . $item['play_start_datetime'] . "</td>";
+                                                                            }
+                                            echo "
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th>Deadline for viewing</th>
+                                            ";
+                                                                            if($item['first_day'] == '0000-01-01' && $item['last_day'] == '9999-12-31') {
+                                                                                echo "<td>Related thread</td>";
+                                                                            } else if($item['first_day'] != '0000-01-01' && $item['last_day'] == '9999-12-31') {
+                                                                                echo "<td>" . $item['first_day'] . " ～ </td>";
+                                                                            } else if($item['first_day'] == '0000-01-01' && $item['last_day'] != '9999-12-31') {
+                                                                                echo "<td> ～ " . $item['last_day'] . "</td>";
+                                                                            } else {
+                                                                                echo "<td>" . $item['first_day'] . " ～ " . $item['last_day'] . "</td>";
+                                                                            }
+                                            echo "
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th>Number of attendance</th>
+                                                                            <td>" . $item['watch_count'] . "Times</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th>capacity</th>
+                                                                            <td>" . size_format($item['size']) . "</td>
+                                                                        </tr>
+                                                                        <!--
+                                                                        <tr class='message'>
+                                                                            <th>Contributor</th>
+                                                                            <td><div class='linkbtn'><a>KJS teacher</a></div></td>
+                                                                        </tr>
+                                                                        <tr class='message'>
+                                                                            <th>Related thread</th>
+                                                                            <td>
+                                                                                <div class='linkbtn'><a>Thread 01</a></div>
+                                                                                <div class='linkbtn'><a>Thread 02</a></div>
+                                                                                <div class='linkbtn'><a>Thread 03</a></div>
+                                                                            </td>
+                                                                        </tr>
+                                                                        -->
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            ";
+                                        }
+                                        break;
+                                    case 1:
+                                        echo "
+                                            <!-- contents item = questionnaire -->
+                                            <div class='list-dummy-02 contents-item questionnaire'>
+                                                <div class='in'>
+                                        ";
+                                                if($item['answer_flg'] == 1) {
+                                                    echo "
+                                                        <div class='title'>" . $item['title'] . "</div>
+                                                    ";
+                                                } else {
+                                                    echo "
+                                                        <div class='title'><a href='questionnaire/questionnaire.php?id=" . $item['primary_key'] . "&bid=" . $subject_section_id . "'>" . $item['title'] . "</a></div>
+                                                    ";
+                                                }
+                                        echo "
+                                                    <div class='detail-info'>
+                                                        <div class='important-info'>
+                                                            <span class='limit'>～" . $item['last_day'] . "</span>
+                                                        </div>
+                                                        <div class='others'>
+                                        ";
+                                                            if($item['answer_flg'] == 1) {
+                                                                echo "
+                                                                    <div class='progress complete'>Submitted</div>
+                                                                    <ul class='btns'>
+                                                                        <li class='info'><button data-toggle='modal' data-target='#Modal-questionnaireinfo-id=" . $item['primary_key'] . "'></button></li><!-- 詳細 Details-->
+                                                                    </ul>
+                                                                ";
+                                                            } else {
+                                                                echo "
+                                                                    <div class='progress incomplete'>Not submitted</div>
+                                                                    <ul class='btns'>
+                                                                        <li class='write'><a href='questionnaire/questionnaire.php?id=" . $item['primary_key'] . "&bid=" . $subject_section_id . "'></a></li><!-- 書く write-->
+                                                                        <li class='info'><button data-toggle='modal' data-target='#Modal-questionnaireinfo-id=" . $item['primary_key'] . "'></button></li><!-- 詳細 Details-->
+                                                                    </ul>
+                                                                ";
+                                                            }
+                                        echo "
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <!-- modal(Questionnaire) -->
+                                        <div class='modal fade contentsinfo questionnaire' id='Modal-questionnaireinfo-id=" . $item['primary_key'] . "' tabindex='-1' role='dialog' aria-hidden='true'>
+                                            <div class='modal-dialog' role='document'>
+                                                <div class='modal-content'>
+                                                    <div class='modal-header'>
+                                                        <p class='icon'></p>
+                                                        <p class='contents-type'>Questionnaire</p>
+                                                        <p class='contents-title'>" . $item['title'] . "</p>
+                                                        <button type='button' class='close' data-dismiss='modal' aria-label='Close'>
+                                                            <span aria-hidden='true'>&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class='modal-body contentsinfo'>
+                                                        <div class='body-left'>
+                                                            <div class='btngroup'>
+                                                                <ul>
+                                        ";
+                                                            if($item['answer_flg'] == 1) {
+                                                            } else {
+                                                                echo "<li class='play'><a href='questionnaire/questionnaire.php?id=" . $item['primary_key'] . "&bid=" . $subject_section_id . "'>To answer</a></li>";
+                                                            }
+                                        echo "
+                                                                </ul>
+                                                            </div>
+                                                            <div class='contents-position'>
+                                                                <div class='head'>Category・Folder</div>
+                                                                <div class='subject'>
+                                                                    <ol>
+                                                                       <li><span><img src='images/icon_subjectlist.png'></span>" . $subject_genre_name ."</li>
+                                                                       <li>" . $subject_section_name ."</li>
+                                                                    </ol>
+                                                                </div>
+                                                                <div class='contentsgroup'>
+                                                                    <p><span><img src='images/icon_contentsgroup.png'>Lecture group</span></p>
+                                                                </div>
+                                                            </div>
+                                                            <div class='contents-relation'>
+                                                                <div class='head'>Related content</div>
+                                                                <ul>
+                                                                    <li>TB</li>
+                                                                    <li>MP4</li>
+                                                                    <li>Quiz</li>
+                                                                    <li>Questionnaire</li>
+                                                                    <li>Report</li>
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                        <div class='body-right'>
+                                                            <div class='other-detail'>
+                                                                <table>
+                                                                    <tr>
+                                                                        <th>Answer situation</th>
+                                        ";
+                                                            if($item['answer_flg'] == 1) {
+                                                                echo "<td>Answered<td>";
+                                                            } else {
+                                                                echo "<td>Last answer<td>";
+                                                            }
+                                        echo "
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <th>Reply deadline</th>
+                                        ";
+                                                                        if($item['start_day'] == '0000-01-01' && $item['last_day'] == '9999-12-31') {
+                                                                            echo "<td>Related thread</td>";
+                                                                        } else if($item['start_day'] != '0000-01-01' && $item['last_day'] == '9999-12-31') {
+                                                                            echo "<td>" . $item['start_day'] . " ～ </td>";
+                                                                        } else if($item['start_day'] == '0000-01-01' && $item['last_day'] != '9999-12-31') {
+                                                                            echo "<td> ～ " . $item['last_day'] . "</td>";
+                                                                        } else {
+                                                                            echo "<td>" . $item['start_day'] . " ～ " . $item['last_day'] . "</td>";
+                                                                        }
+                                        echo "
+                                                                    </tr>
+                                                                    <!--
+                                                                    <tr class='message'>
+                                                                        <th>Contributor</th>
+                                                                        <td><div class='linkbtn'><a>KJS teacher</a></div></td>
+                                                                    </tr>
+                                                                    <tr class='message'>
+                                                                        <th>Related thread</th>
+                                                                        <td>
+                                                                            <div class='linkbtn'><a>Thread 01</a></div>
+                                                                            <div class='linkbtn'><a>Thread 02</a></div>
+                                                                            <div class='linkbtn'><a>Thread 03</a></div>
+                                                                        </td>
+                                                                    </tr>
+                                                                    -->
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        ";
+                                        break;
+                                    case 2:
+                                        echo "
+                                            <!-- contents item = report -->
+                                            <div class='list-dummy-03 contents-item report'>
+                                                <div class='in'>
+                                        ";
+                                                if($item['answer_flg'] == 1) {
+                                                    echo "
+                                                        <div class='title'>" . $item['title'] . "</div>
+                                                    ";
+                                                } else {
+                                                    echo "
+                                                        <div class='title'><a href='report/report.php?id=" . $item['primary_key'] . "&bid=" . $subject_section_id . "'>" . $item['title'] . "</a></div>
+                                                    ";
+                                                }
+                                        echo "
+                                                    <div class='detail-info'>
+                                                        <div class='important-info'>
+                                                            <span class='limit'>～" . $item['last_day'] . "</span>
+                                                        </div>
+                                                        <div class='others'>
+                                        ";
+                                                            if($item['answer_flg'] == 1) {
+                                                                echo "
+                                                                    <div class='progress complete'>Submitted</div>
+                                                                    <ul class='btns'>
+                                                                        <li class='info'><button data-toggle='modal' data-target='#Modal-reportinfo-id=" . $item['primary_key'] . "'></button></li><!-- 詳細 Details-->
+                                                                    </ul>
+                                                                ";
+                                                            } else {
+                                                                echo "
+                                                                    <div class='progress incomplete'>Not submitted</div>
+                                                                    <ul class='btns'>
+                                                                        <li class='write'><a href='report/report.php?id=" . $item['primary_key'] . "&bid=" . $subject_section_id . "'></a></li><!-- 書く Write-->
+                                                                        <li class='info'><button data-toggle='modal' data-target='#Modal-reportinfo-id=" . $item['primary_key'] . "'></button></li><!-- 詳細 Details-->
+                                                                    </ul>
+                                                                ";
+                                                            }
+                                        echo "
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <!-- modal(レポート詳細) modal (report details)-->
+                                        <div class='modal fade contentsinfo report' id='Modal-reportinfo-id=" . $item['primary_key'] . "' tabindex='-1' role='dialog' aria-hidden='true'>
+                                            <div class='modal-dialog' role='document'>
+                                                <div class='modal-content'>
+                                                    <div class='modal-header'>
+                                                        <p class='icon'></p>
+                                                        <p class='contents-type'>Report</p>
+                                                        <p class='contents-title'>" . $item['title'] . "</p>
+                                                        <button type='button' class='close' data-dismiss='modal' aria-label='Close'>
+                                                            <span aria-hidden='true'>&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class='modal-body contentsinfo'>
+                                                        <div class='body-left'>
+                                                            <div class='btngroup'>
+                                                                <ul>
+                                        ";
+                                                            if($item['answer_flg'] == 1) {
+                                                            } else {
+                                                                echo "<li class='play'><a href='report/report.php?id=" . $item['primary_key'] . "&bid=" . $subject_section_id . "'>create</a></li>";
+                                                            }
+                                        echo "
+                                                                </ul>
+                                                            </div>
+                                                            <div class='contents-position'>
+                                                                <div class='head'>Category・Folder</div>
+                                                                <div class='subject'>
+                                                                    <ol>
+                                                                       <li><span><img src='images/icon_subjectlist.png'></span>" . $subject_genre_name ."</li>
+                                                                       <li>" . $subject_section_name ."</li>
+                                                                    </ol>
+                                                                </div>
+                                                                <div class='contentsgroup'>
+                                                                    <p><span><img src='images/icon_contentsgroup.png'>Lecture group</span></p>
+                                                                </div>
+                                                            </div>
+                                                            <div class='contents-relation'>
+                                                                <div class='head'>Related content</div>
+                                                                <ul>
+                                                                    <li>TB</li>
+                                                                    <li>MP4</li>
+                                                                    <li>Quiz</li>
+                                                                    <li>Questionnaire</li>
+                                                                    <li>Report</li>
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                        <div class='body-right'>
+                                                            <div class='other-detail'>
+                                                                <table>
+                                                                    <tr>
+                                                                        <th>Answer situation</th>
+                                        ";
+                                                            if($item['answer_flg'] == 1) {
+                                                                echo "<td>Answered<td>";
+                                                            } else {
+                                                                echo "<td>Last answer<td>";
+                                                            }
+                                        echo "
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <th>Deadline for creation</th>
+                                        ";
+                                                                        if($item['start_day'] == '0000-01-01' && $item['last_day'] == '9999-12-31') {
+                                                                            echo "<td>Related thread</td>";
+                                                                        } else if($item['start_day'] != '0000-01-01' && $item['last_day'] == '9999-12-31') {
+                                                                            echo "<td>" . $item['start_day'] . " ～ </td>";
+                                                                        } else if($item['start_day'] == '0000-01-01' && $item['last_day'] != '9999-12-31') {
+                                                                            echo "<td> ～ " . $item['last_day'] . "</td>";
+                                                                        } else {
+                                                                            echo "<td>" . $item['start_day'] . " ～ " . $item['last_day'] . "</td>";
+                                                                        }
+                                        echo "
+                                                                    </tr>
+                                                                    <!--
+                                                                    <tr class='message'>
+                                                                        <th>Contributor</th>
+                                                                        <td><div class='linkbtn'><a>KJS teacher</a></div></td>
+                                                                    </tr>
+                                                                    <tr class='message'>
+                                                                        <th>Related thread</th>
+                                                                        <td>
+                                                                            <div class='linkbtn'><a>Thread 01</a></div>
+                                                                            <div class='linkbtn'><a>Thread 02</a></div>
+                                                                            <div class='linkbtn'><a>Thread 03</a></div>
+                                                                        </td>
+                                                                    </tr>
+                                                                    -->
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        ";
+                                        break;
+                                    case 3:
+                                        echo "
+                                        <!-- contents item = test(Pass) -->
+                                        <div class='list-dummy-04 contents-item test'>
+                                            <div class='in'>
+                                        ";
+                                                    if($item['repeat_challenge'] > 0 && $item['repeat_challenge'] <= count($item) - $quiz_parameter_value) {
+                                                        echo "<div class='title'>" . $item['title'] . "</div>";
+                                                    } else if($item['last_answer_id'] == 0) {
+                                                        echo "<div class='title'><a href='quiz/start.php?id=" . $item['primary_key'] . "&bid=" . $subject_section_id . "'>" . $item['title'] . "</a></div>";
+                                                    } else {
+                                                        echo "<div class='title'><a href='quiz/start.php?id=" . $item['primary_key'] . "&an=" . $item['last_answer_id'] . "&bid=" . $subject_section_id . "'>" . $item['title'] . "</a></div>";
+                                                    }
+                                        echo "
+                                                <div class='detail-info'>
+                                                    <div class='important-info'>
+                                        ";
+                                                        if($item['repeat_challenge'] != 0) {
+                                                          // 2019/6/03 count関数対策
+                                                          if(is_countable($item)){
+                                                            echo "<span class='count'>after" . ($item['repeat_challenge'] - (count($item) - $quiz_parameter_value)) . "Times</span>";
+                                                          }
+                                                            //echo "<span class='count'>after" . ($item['repeat_challenge'] - (count($item) - $quiz_parameter_value)) . "回</span>";
+                                                        } else {
+                                                            echo "<span class='count'>Unlimited</span>";
+                                                        }
+                                        echo "
+                                                        <span class='limit'>～" . $item['last_day'] . "</span>
+                                                    </div>
+                                                    <div class='others'>
+                                        ";          //debug( $item );
+                                                    //debug( $item[ 'primary_key'] );
+                                                    //debug( $subject_section_id );
+                                                        if($item['answer_count'] > 0) {
+                                                            echo "<div class='progress complete'>" . $item['max_score'] . "point</div>";
+                                                        } else {
+                                                            echo "<div class='progress failure'></div>";
+                                                        }
+
+                                                        if($item['repeat_challenge'] > 0 && $item['repeat_challenge'] <= count($item) - $quiz_parameter_value) {
+                                                          //debug("1");
+                                                          //debug( count($item) );
+                                                          //debug( $quiz_parameter_value );
+                                                            echo "
+                                                                <ul class='btns'>
+                                                                </li>
+                                                            ";
+                                                        } else if($item['last_answer_id'] == 0) {
+                                                          //debug("2");
+                                                            echo "
+                                                                <ul class='btns'>
+                                                                    <li class='write'><a href='quiz/start.php?id=" . $item['primary_key'] . "&bid=" . $subject_section_id . "'></a><!-- I take a test -->
+                                                                </li>
+                                                            ";
+                                                        } else {
+                                                          //debug("3");
+                                                            echo "
+                                                                <ul class='btns'>
+                                                                    <li class='write'><a href='quiz/start.php?id=" . $item['primary_key'] . "&an=" . $item['last_answer_id'] . "&bid=" . $subject_section_id . "'></a><!-- I take a test -->
+                                                                </li>
+                                                            ";
+                                                        }
+                                                        if(isset($item['last_register_datetime'])) {
+                                                          //debug("4");
+                                                            #echo "<li class='graph'><a href='quiz/result.php?id=" . $item['last_quiz_answer'] . "&bid=" . $subject_section_id . "'></a></li><!-- テスト結果 test results-->";
+                                                            echo "<li class='graph'><a href='quiz/result.php?id=" . $item['primary_key'] . "&an=" . $item['last_quiz_answer'] . "&bid=" . $subject_section_id . "'></a></li><!-- テスト結果 test results-->";
+                                                        }
+                                        echo "
+                                                            <li class='info'><button href='' data-toggle='modal' data-target='#Modal-testinfo-id=" . $item['primary_key'] . "'></button></li><!-- 詳細 Details-->
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        ";
+                                        echo "
+                                        <!-- modal(テスト詳細) modal(test results)-->
+                                        <div class='modal fade contentsinfo test' id='Modal-testinfo-id=" . $item['primary_key'] . "' tabindex='-1' role='dialog' aria-hidden='true'>
+                                            <div class='modal-dialog' role='document'>
+                                                <div class='modal-content'>
+                                                    <div class='modal-header'>
+                                                        <p class='icon'></p>
+                                                        <p class='contents-type'>Quiz</p>
+                                                        <p class='contents-title'>" . $item['title'] . "</p>
+                                                        <button type='button' class='close' data-dismiss='modal' aria-label='Close'>
+                                                            <span aria-hidden='true'>&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class='modal-body contentsinfo'>
+                                                        <div class='body-left'>
+                                                            <div class='btngroup'>
+                                                                <ul>
+                                            ";
+                                                                if($item['repeat_challenge'] > 0 && $item['repeat_challenge'] <= count($item) - $quiz_parameter_value) {
+                                                                    echo "
+                                                                        <li class='write'>
+                                                                        </li>
+                                                                    ";
+                                                                } else if($item['last_answer_id'] == 0) {
+                                                                    echo "
+                                                                        <li class='write'>
+                                                                            <a href='quiz/start.php?id=" . $item['primary_key'] . "&bid=" . $subject_section_id . "'>I take a test</a>
+                                                                        </li>
+                                                                    ";
+                                                                } else {
+                                                                    echo "
+                                                                        <li class='write'>
+                                                                            <a href='quiz/start.php?id=" . $item['primary_key'] . "&an=" . $item['last_answer_id'] . "&bid=" . $subject_section_id . "'>I take a test</a>
+                                                                        </li>
+                                                                    ";
+                                                                }
+                                            echo "
+                                                                </ul>
+                                                            </div>
+                                                            <div class='test-count'>
+                                                                <div class='head'>View detailed results</div>
+                                                                <ul class='test-count-select'>
+
+                                            ";
+                                                                    for($i = 0, $j = 0; $i < count($item) - $quiz_parameter_value ; $i++) {
+                                                                        if ($item[$i]['end_flag'] == 1) {
+                                                                            $j++;
+                                                                            if ($item[$i]['qualifying_score'] == 0) {
+                                                                                echo "
+                                                                                    <li>
+                                                                                        <a href='quiz/result.php?id=" . $item[$i]['quiz_id'] . "&an=" . $item[$i]['answer_id'] . "&bid=" . $subject_section_id . "'>Q" . ($j) . "Times<span class='###No judgment###'>No judgment</span></a>
+                                                                                    </li>
+                                                                                ";
+                                                                            } else if($item[$i]['qualifying_score'] <= $item[$i]['total_score']) {
+                                                                                echo "
+                                                                                    <li>
+                                                                                        <a href='quiz/result.php?id=" . $item[$i]['quiz_id'] . "&an=" . $item[$i]['answer_id'] . "&bid=" . $subject_section_id . "'>Q" . ($j) . "Times<span class='t'>Pass</span></a>
+                                                                                    </li>
+                                                                                ";
+                                                                            } else if($item[$i]['qualifying_score'] > $item[$i]['total_score']) {
+                                                                                echo "
+                                                                                    <li>
+                                                                                        <a href='quiz/result.php?id=" . $item[$i]['quiz_id'] . "&an=" . $item[$i]['answer_id'] . "&bid=" . $subject_section_id . "'>Q" . ($j) . "Times<span class='f'>failure</span></a>
+                                                                                    </li>
+                                                                                ";
+                                                                            }
+                                                                        }
+                                                                    }
+                                            echo "
+                                                                </ul>
+                                                            </div>
+                                                            <div class='contents-position'>
+                                                                <div class='head'>Category・Folder</div>
+                                                                <div class='subject'>
+                                                                    <ol>
+                                                                       <li><span><img src='images/icon_subjectlist.png'></span>" . $subject_genre_name ."</li>
+                                                                       <li>" . $subject_section_name ."</li>
+                                                                    </ol>
+                                                                </div>
+                                                                <div class='contentsgroup'>
+                                                                    <p><span><img src='images/icon_contentsgroup.png'>Lecture group</span></p>
+                                                                </div>
+                                                            </div>
+                                                            <div class='contents-relation'>
+                                                                <div class='head'>Related content</div>
+                                                                <ul>
+                                                                    <li>TB</li>
+                                                                    <li>MP4</li>
+                                                                    <li>Quiz</li>
+                                                                    <li>Questionnaire</li>
+                                                                    <li>Report</li>
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                        <div class='body-right'>
+                                                            <div class='other-detail'>
+                                                                <table>
+                                                                    <tr>
+                                                                        <th>Examination status</th>
+                                        ";
+                                                                        if($item['answer_count'] == 0) {
+                                                                            echo "<td>Not yet taken</td>";
+                                                                        } else {
+                                                                            echo "<td>Take an exam</td>";
+                                                                        }
+                                        echo "
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <th>Final exam date</th>
+                                        ";
+                                                                        if($item['answer_count'] == 0) {
+                                                                            echo "<td>-</td>";
+                                                                        } else {
+                                                                            echo "<td>～～～</td>";
+                                                                        }
+                                        echo "
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <th>Examination deadline</th>
+                                        ";
+                                                                        if($item['start_day'] == '0000-01-01' && $item['last_day'] == '9999-12-31') {
+                                                                            echo "<td>Related thread</td>";
+                                                                        } else if($item['start_day'] != '0000-01-01' && $item['last_day'] == '9999-12-31') {
+                                                                            echo "<td>" . $item['start_day'] . " ～ </td>";
+                                                                        } else if($item['start_day'] == '0000-01-01' && $item['last_day'] != '9999-12-31') {
+                                                                            echo "<td> ～ " . $item['last_day'] . "</td>";
+                                                                        } else {
+                                                                            echo "<td>" . $item['start_day'] . " ～ " . $item['last_day'] . "</td>";
+                                                                        }
+                                        echo "
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <th>Number of exams</th>
+                                                                        <td>" . $item['answer_count'] . "Times</td>
+                                                                    </tr>
+                                                                        <th>Number limit</th>
+                                        ";
+                                                                        if($item['repeat_challenge'] == 0) {
+                                                                            echo "<td>Unlimited</td>";
+                                                                        } else {
+                                                                            echo "<td>" . $item['repeat_challenge'] . "Times</td>";
+                                                                        }
+                                        echo "
+                                                                    </tr>
+                                                                    <!--
+                                                                    <tr>
+                                                                        <th>capacity</th>
+                                                                        <td>20MB</td>
+                                                                    </tr>
+                                                                    <tr class='message'>
+                                                                        <th>Contributor</th>
+                                                                        <td><div class='linkbtn'><a>KJS teacher</a></div></td>
+                                                                    </tr>
+                                                                    <tr class='message'>
+                                                                        <th>Related thread</th>
+                                                                        <td>
+                                                                            <div class='linkbtn'><a>Thread 01</a></div>
+                                                                            <div class='linkbtn'><a>Thread 02</a></div>
+                                                                            <div class='linkbtn'><a>Thread 03</a></div>
+                                                                        </td>
+                                                                    </tr>
+                                                                    -->
+                                                                    <tr>
+                                                                        <th>Passing score</th>
+                                        ";
+                                                                        if($item['qualifying_score'] == 0) {
+                                                                            echo "<td>No passing score</td>";
+                                                                        } else {
+                                                                            echo "<td>" . $item['qualifying_score'] . "point</td>";
+                                                                        }
+                                        echo "
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <th>Highest score</th>
+                                        ";
+                                                                        if($item['max_score'] == NULL) {
+                                                                            echo "<td>Not yet taken</td>";
+                                                                        } else {
+                                                                            echo "<td>" . $item['max_score'] . "point</td>";
+                                                                        }
+                                        echo "
+                                                                    </tr>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        ";
+                                        break;
+                                  case 4:
+                                    echo "
+                                      <!-- フォルダー folder-->
+                                      <div class='contentsgroup'>
+                                      <!-- フォルダータイトル Folder title-->
+                                        <div class='contentsgroup-title'>
+                                          <p class='title'>" . $item['title'] . "</p>
+                                        </div>";
+                                    for ( $j = 0; $j < $item[ 'child_item' ]; $j++ ) {
+                                      if ( $item['primary_key'] == $item['child_data'][$j]['parent_function_group_id'] ) {
+                                        switch ( $item['child_data'][$j]['type'] ) {
+
+                                          case 0:
+                                            
+                                          if ($item['child_data'][$j]['contents_extension_id'] <= 6) {
+                                              echo "
+                                                  <!-- contents item = TB -->
+                                                  <div class='list-dummy-01 contents-item tb'>
+                                                      <div class='in'>
+                                                        <div class='title'>
+                                                              <a class='tb3_play' href='contents/contents_play.php?c_id=" .$item[ 'child_data' ][ $j ][ 'primary_key' ]. "&bid=" . $_GET['bid'] ."&s_id=" .$student_id . "&e_id=" . $item[ 'child_data' ][ $j ][ 'contents_extension_id' ] ."'
+                                                                  data-contentID=".$item[ 'child_data' ][ $j ][ 'primary_key' ]."
+                                                                  data-extensionID=".$item[ 'child_data' ][ $j ][ 'contents_extension_id' ]."
+                                                                  data-title=".$item[ 'child_data' ][ $j ][ 'title' ].">" . $item[ 'child_data' ][ $j ]['title']."
+                                                              </a>
+                                                          </div>
+                                                          <div class='detail-info'>
+                                                              <div class='important-info'>
+                                                                  <span class='count'>" . $item[ 'child_data' ][ $j ]['watch_count'] . "Times</span>
+                                              ";
+                                                                  if($item[ 'child_data' ][ $j ]['play_start_datetime'] == '0000-00-00 00:00:00') {
+                                                                      echo "<span class='contents-time'>Not watched</span>";
+                                                                  } else {
+                                                                      echo "<span class='contents-time'>".$item[ 'child_data' ][ $j ]['play_start_datetime']."</span>";
+                                                                  }
+                                              echo "
+                                                              </div>
+                                                              <div class='others'>
+                                              ";
+                                                                  if($item[ 'child_data' ][ $j ]['proportion_flg'] == 0 && $item[ 'child_data' ][ $j ]['proportion'] == '') {
+                                                                      echo "<div class='progress incomplete'>Not watched</div>";
+                                                                  } else if($item[ 'child_data' ][ $j ]['proportion_flg'] == 0 && $item[ 'child_data' ][ $j ]['proportion'] != '') {
+                                                                      echo "<div class='progress midstream'>" . $item[ 'child_data' ][ $j ]['proportion'] . "%</div>";
+                                                                  } else if($item[ 'child_data' ][ $j ]['proportion_flg'] == 1 && $item[ 'child_data' ][ $j ]['proportion'] != '') {
+                                                                      echo "<div class='progress complete'>" . $item[ 'child_data' ][ $j ]['proportion'] . "%</div>";
+                                                                  }
+                                              echo "
+                                                                  <ul class='btns'>
+                                                                      <li class='play'>
+                                                                        <a class='tb3_play' href='contents/contents_play.php?c_id=" .$item[ 'child_data' ][ $j ][ 'primary_key' ].
+                                                                          "&bid=" . $_GET['bid'] ."&s_id=" .$student_id .
+                                                                          "&e_id=" . $item[ 'child_data' ][ $j ][ 'contents_extension_id' ] ."'
+                                                                          data-contentID=".$item[ 'child_data' ][ $j ][ 'primary_key' ]."
+                                                                          data-extensionID=".$item[ 'child_data' ][ $j ][ 'contents_extension_id' ]."
+                                                                          data-title=".$item[ 'child_data' ][ $j ][ 'title' ].">
+                                                                        </a>
+                                                                      </li><!-- 再生 Regeneration-->
+                                                                      <li class='reacquire'><button id='reacquire_btn'
+                                                                        class='reacquire_results' data-bid=".$_GET['bid']." data-studentID=".$student_id."
+                                                                        data-contentID2=".$item[ 'child_data' ][ $j ][ 'primary_key' ]."
+                                                                        data-extensionID2=".$item[ 'child_data' ][ $j ][ 'contents_extension_id' ]."'></button></li>
+                                                                        <!-- ログ再取得 Log reacquisition-->
+                                                                      <li class='info'>
+                                                                        <button id='motal_contents' class='contents_info' data-bid=".$_GET['bid']."
+                                                                          data-studentID=".$student_id." data-contentID2=".$item[ 'child_data' ][ $j ][ 'primary_key' ]."
+                                                                          data-extensionID2=".$item[ 'child_data' ][ $j ][ 'contents_extension_id' ]."
+                                                                          data-toggle='modal' data-target='#Modal-contentsinfo-tb-id=" . $item[ 'child_data' ][ $j ]['primary_key'] . "'>
+                                                                        </button>
+                                                                      </li><!-- 詳細 Details-->
+                                              ";
+                                                                          for($i = 0; $i < count($item[ 'child_data' ][ $j ]) - $contents_parameter_value ; $i++) {
+                                                                              echo "
+                                                                                  <li class='file'>
+                                                                                      <form
+                                                                                            action='" . $url . "download_attachment.php'
+                                                                                            method='post'
+                                                                                            target='hidden-iframe'
+                                                                                            >
+                                                                                          <input type='hidden' name='id' value=" .$item[ 'child_data' ][ $j ][$i]['contents_attachment_id']. ">
+                                                                                          <input type='hidden' name='name' value=" .$item[ 'child_data' ][ $j ][$i]['file_name']. ">
+                                                                                          <input type='submit' value=''>
+                                                                                      </form>
+                                                                                  </li>
+                                                                              ";
+                                                                          }
+                                              echo "
+                                                                  </ul>
+                                                              </div>
+                                                          </div>
+                                                      </div>
+                                                  </div>
+                                              <!-- modal(コンテンツ詳細-TB) modal (content details-TB)-->
+                                              <div class='modal fade contentsinfo tb' id='Modal-contentsinfo-tb-id=" . $item[ 'child_data' ][ $j ]['primary_key'] . "' tabindex='-1' role='dialog' aria-hidden='true'>
+                                                  <div class='modal-dialog' role='document'>
+                                                      <div class='modal-content'>
+                                                          <div class='modal-header'>
+                                                              <p class='icon'></p>
+                                                              <p class='contents-type'>Video class(TB format)</p>
+                                                              <p class='contents-title'>" . $item[ 'child_data' ][ $j ]['title'] . "</p>
+                                                              <button type='button' id='contents_close' class='close' data-dismiss='modal' aria-label='Close'>
+                                                                  <span aria-hidden='true'>&times;</span>
+                                                              </button>
+                                                          </div>
+                                                          <div class='modal-body contentsinfo'>
+                                                              <div class='body-left'>
+                                                                  <div class='btngroup'>
+                                                                      <ul>
+                                                                          <li class='play'><a class='tb3_play' href='contents/contents_play.php?c_id=" .$item[ 'child_data' ][ $j ][ 'primary_key' ]. "&bid=" . $_GET['bid'] ."&s_id=" .$student_id . "&e_id=" . $item[ 'child_data' ][ $j ][ 'contents_extension_id' ] ."'
+                                                                            data-contentID=".$item[ 'child_data' ][ $j ][ 'primary_key' ]."
+                                                                            data-extensionID=".$item[ 'child_data' ][ $j ][ 'contents_extension_id' ]."
+                                                                            data-title=".$item[ 'child_data' ][ $j ][ 'title' ].">Play</a></li>
+                                              ";
+                                                                          for($i = 0; $i < count($item[ 'child_data' ][ $j ]) - $contents_parameter_value ; $i++) {
+                                                                              echo "
+                                                                                  <li class='file'>
+                                                                                      <form
+                                                                                            action='" . $url . "download_attachment.php'
+                                                                                            method='post'
+                                                                                            target='hidden-iframe'
+                                                                                            >
+                                                                                          <input type='hidden' name='id' value=" .$item[ 'child_data' ][ $j ][$i]['contents_attachment_id']. ">
+                                                                                          <input type='hidden' name='name' value=" .$item[ 'child_data' ][ $j ][$i]['file_name']. ">
+                                                                                          <input type='submit' value=''>
+                                                                                          Attached file
+                                                                                      </form>
+                                                                                  </li>
+                                                                              ";
+                                                                          }
+                                              echo "
+                                                                      </ul>
+                                                                  </div>
+                                                                  <div class='contents-position'>
+                                                                      <div class='head'>Category・Folder</div>
+                                                                      <div class='subject'>
+                                                                          <ol>
+                                                                             <li><span><img src='images/icon_subjectlist.png'></span>" . $subject_genre_name ."</li>
+                                                                             <li>" . $subject_section_name ."</li>
+                                                                          </ol>
+                                                                      </div>
+                                                                      <div class='contentsgroup'>
+                                                                          <p><span><img src='images/icon_contentsgroup.png'>Lecture group</span></p>
+                                                                      </div>
+                                                                  </div>
+                                                                  <div class='contents-relation'>
+                                                                      <div class='head'>Related content</div>
+                                                                      <ul>
+                                                                          <li>TB</li>
+                                                                          <li>MP4</li>
+                                                                          <li>Quiz</li>
+                                                                          <li>Questionnaire</li>
+                                                                          <li>Report</li>
+                                                                      </ul>
+                                                                  </div>
+                                                              </div>
+                                                              <div class='body-right'>
+                                                                  <div class='other-detail'>
+                                                                      <table>
+                                                                          <tr>
+                                                                              <th>Viewing status</th>
+                                              ";
+                                                                              if($item[ 'child_data' ][ $j ]['proportion'] == '') {
+                                                                                  echo "<td>Not watched</td>";
+                                                                              } else {
+                                                                                  echo "<td>" . $item[ 'child_data' ][ $j ]['proportion'] . "％</td>";
+                                                                              }
+                                              echo "
+                                                                          </tr>
+                                                                          <tr>
+                                                                              <th>Last viewing history</th>
+                                              ";
+                                                                              if($item[ 'child_data' ][ $j ]['play_start_datetime'] == '0000-00-00 00:00:00') {
+                                                                                  echo "<td>Not watched</td>";
+                                                                              } else {
+                                                                                  echo "<td>" . $item[ 'child_data' ][ $j ]['play_start_datetime'] . "</td>";
+                                                                              }
+                                              echo "
+                                                                          </tr>
+                                                                          <tr>
+                                                                              <th>Deadline for viewing</th>
+                                              ";
+                                                                              if($item[ 'child_data' ][ $j ]['first_day'] == '0000-01-01' && $item[ 'child_data' ][ $j ]['last_day'] == '9999-12-31') {
+                                                                                  echo "<td>Related thread</td>";
+                                                                              } else if($item[ 'child_data' ][ $j ]['first_day'] != '0000-01-01' && $item[ 'child_data' ][ $j ]['last_day'] == '9999-12-31') {
+                                                                                  echo "<td>" . $item['first_day'] . " ～ </td>";
+                                                                              } else if($item[ 'child_data' ][ $j ]['first_day'] == '0000-01-01' && $item[ 'child_data' ][ $j ]['last_day'] != '9999-12-31') {
+                                                                                  echo "<td> ～ " . $item[ 'child_data' ][ $j ]['last_day'] . "</td>";
+                                                                              } else {
+                                                                                  echo "<td>" . $item[ 'child_data' ][ $j ]['first_day'] . " ～ " . $item[ 'child_data' ][ $j ]['last_day'] . "</td>";
+                                                                              }
+                                              echo "
+                                                                          </tr>
+                                                                          <tr>
+                                                                              <th>Number of attendance</th>
+                                                                              <td>" . $item[ 'child_data' ][ $j ]['watch_count'] . "Times</td>
+                                                                          </tr>
+                                                                          <tr>
+                                                                              <th>capacity</th>
+                                                                              <td>" . size_format($item[ 'child_data' ][ $j ]['size']) . "</td>
+                                                                          </tr>
+                                                                          <!--
+                                                                          <tr class='message'>
+                                                                              <th>Contributor</th>
+                                                                              <td><div class='linkbtn'><a>KJS teacher</a></div></td>
+                                                                          </tr>
+                                                                          <tr class='message'>
+                                                                              <th>Related thread</th>
+                                                                              <td>
+                                                                                  <div class='linkbtn'><a>Thread 01</a></div>
+                                                                                  <div class='linkbtn'><a>Thread 02</a></div>
+                                                                                  <div class='linkbtn'><a>Thread 03</a></div>
+                                                                              </td>
+                                                                          </tr>
+                                                                          -->
+                                                                      </table>
+                                                                  </div>
+                                                              </div>
+                                                          </div>
+                                                      </div>
+                                                  </div>
+                                              </div>
+                                              ";
+                                          } else {
+                                              echo "
+                                                  <!-- contents item = MP4 -->
+                                                  <div class='list-dummy-01 contents-item mp4'>
+                                                      <div class='in'>
+                                                        <div class='title'>
+                                                              <a class='tb3_play' href='contents/contents_play.php?c_id=" .$item[ 'child_data' ][ $j ][ 'primary_key' ]. "&bid=" . $_GET['bid'] ."&s_id=" .$student_id . "&e_id=" . $item[ 'child_data' ][ $j ][ 'contents_extension_id' ] ."'
+                                                                  data-contentID=".$item[ 'child_data' ][ $j ][ 'primary_key' ]."
+                                                                  data-extensionID=".$item[ 'child_data' ][ $j ][ 'contents_extension_id' ]."
+                                                                  data-title=".$item[ 'child_data' ][ $j ][ 'title' ].">" . $item[ 'child_data' ][ $j ]['title']."
+                                                              </a>
+                                                          </div>
+                                                          <div class='detail-info'>
+                                                              <div class='important-info'>
+                                                                  <span class='count'>" . $item[ 'child_data' ][ $j ]['watch_count'] . "Times</span>
+                                              ";
+                                                                  if($item[ 'child_data' ][ $j ]['play_start_datetime'] == '0000-00-00 00:00:00') {
+                                                                      echo "<span class='contents-time'>Not watched</span>";
+                                                                  } else {
+                                                                      echo "<span class='contents-time'>".$item[ 'child_data' ][ $j ][ 'child_data' ][ $j ]['play_start_datetime']."</span>";
+                                                                  }
+                                              echo "
+                                                              </div>
+                                                              <div class='others'>
+                                              ";
+                                                                  if($item[ 'child_data' ][ $j ]['proportion_flg'] == 0 && $item[ 'child_data' ][ $j ]['proportion'] == '') {
+                                                                      echo "<div class='progress incomplete'>Not watched</div>";
+                                                                  } else if($item[ 'child_data' ][ $j ]['proportion_flg'] == 0 && $item[ 'child_data' ][ $j ]['proportion'] != '') {
+                                                                      echo "<div class='progress midstream'>" . $item[ 'child_data' ][ $j ]['proportion'] . "%</div>";
+                                                                  } else if($item[ 'child_data' ][ $j ]['proportion_flg'] == 1 && $item[ 'child_data' ][ $j ]['proportion'] != '') {
+                                                                      echo "<div class='progress complete'>" . $item[ 'child_data' ][ $j ]['proportion'] . "%</div>";
+                                                                  }
+                                              echo "
+                                                                  <ul class='btns'>
+                                                                      <li class='play'>
+                                                                        <a class='tb3_play' href='contents/contents_play.php?c_id=" .$item[ 'child_data' ][ $j ][ 'primary_key' ].
+                                                                          "&bid=" . $_GET['bid'] . "&s_id=" .$student_id . "&e_id=" . $item[ 'child_data' ][ $j ][ 'contents_extension_id' ] ."'
+                                                                          data-contentID=".$item[ 'child_data' ][ $j ][ 'primary_key' ]."
+                                                                          data-extensionID=".$item[ 'child_data' ][ $j ][ 'contents_extension_id' ]."
+                                                                          data-title=".$item[ 'child_data' ][ $j ][ 'title' ]."></data>
+                                                                        </a>
+                                                                      </li><!-- 再生 -->
+                                                                      <li class='reacquire'>
+                                                                        <button id='reacquire_mp4' class='reacquire_results' data-bid=".$_GET['bid']."
+                                                                          data-studentID=".$student_id." data-contentID2=".$item[ 'child_data' ][ $j ][ 'primary_key' ]."
+                                                                          data-extensionID2=".$item[ 'child_data' ][ $j ][ 'contents_extension_id' ]."'>
+                                                                        </button>
+                                                                      </li><!-- ログ再取得 -->
+                                                                      <li class='info'>
+                                                                        <button data-toggle='modal' class='contents_info' data-bid=".$_GET['bid']."
+                                                                          data-studentID=".$student_id." data-contentID2=".$item[ 'child_data' ][ $j ][ 'primary_key' ]."
+                                                                          data-extensionID2=".$item[ 'child_data' ][ $j ][ 'contents_extension_id' ]."
+                                                                          data-target='#Modal-contentsinfo-mp4-id=" . $item[ 'child_data' ][ $j ]['primary_key'] . "'>
+                                                                        </button>
+                                                                      </li><!-- 詳細 -->
+                                              ";
+                                                                          for($i = 0; $i < count($item[ 'child_data' ][ $j ]) - $contents_parameter_value ; $i++) {
+                                                                              echo "
+                                                                                  <li class='file'>
+                                                                                      <form
+                                                                                            action='" . $url . "download_attachment.php'
+                                                                                            method='post'
+                                                                                            target='hidden-iframe'
+                                                                                            >
+                                                                                          <input type='hidden' name='id' value=" .$item[ 'child_data' ][ $j ][$i]['contents_attachment_id']. ">
+                                                                                          <input type='hidden' name='name' value=" .$item[ 'child_data' ][ $j ][$i]['file_name']. ">
+                                                                                          <input type='submit' value=''>
+                                                                                      </form>
+                                                                                  </li>
+                                                                              ";
+                                                                          }
+                                              echo "
+                                                                  </ul>
+                                                              </div>
+                                                          </div>
+                                                      </div>
+                                                  </div>
+                                              <!-- modal(コンテンツ詳細-MP4) -->
+                                              <div class='modal fade contentsinfo mp4' id='Modal-contentsinfo-mp4-id=" . $item[ 'child_data' ][ $j ]['primary_key'] . "' tabindex='-1' role='dialog' aria-hidden='true'>
+                                                  <div class='modal-dialog' role='document'>
+                                                      <div class='modal-content'>
+                                                          <div class='modal-header'>
+                                                              <p class='icon'></p>
+                                                              <p class='contents-type'>Video class(MP4 format)</p>
+                                                              <p class='contents-title'>" . $item[ 'child_data' ][ $j ]['title'] . "</p>
+                                                              <button type='button' class='close' data-dismiss='modal' aria-label='Close'>
+                                                                  <span aria-hidden='true'>&times;</span>
+                                                              </button>
+                                                          </div>
+                                                          <div class='modal-body contentsinfo'>
+                                                              <div class='body-left'>
+                                                                  <div class='btngroup'>
+                                                                      <ul>
+                                                                          <li class='play'>
+                                                                            <a class='tb3_play' href='contents/contents_play.php?c_id=" .$item[ 'child_data' ][ $j ][ 'primary_key' ].
+                                                                              "&bid=" . $_GET['bid'] . "&s_id=" .$student_id . "&e_id=" . $item[ 'child_data' ][ $j ][ 'contents_extension_id' ] ."'
+                                                                              data-contentID=".$item[ 'child_data' ][ $j ][ 'primary_key' ]."
+                                                                              data-extensionID=".$item[ 'child_data' ][ $j ][ 'contents_extension_id' ]."
+                                                                              data-title=".$item[ 'child_data' ][ $j ][ 'title' ].">Play</a>
+                                                                          </li>
+                                              ";
+                                                                          for($i = 0; $i < count($item[ 'child_data' ][ $j ]) - $contents_parameter_value ; $i++) {
+                                                                              echo "
+                                                                                  <li class='file'>
+                                                                                      <form
+                                                                                            action='" . $url . "download_attachment.php'
+                                                                                            method='post'
+                                                                                            target='hidden-iframe'
+                                                                                            >
+                                                                                          <input type='hidden' name='id' value=" .$item[ 'child_data' ][ $j ][$i]['contents_attachment_id']. ">
+                                                                                          <input type='hidden' name='name' value=" .$item[ 'child_data' ][ $j ][$i]['file_name']. ">
+                                                                                          <input type='submit' value=''>
+                                                                                          Attached file
+                                                                                      </form>
+                                                                                  </li>
+                                                                              ";
+                                                                          }
+                                              echo "
+                                                                      </ul>
+                                                                  </div>
+                                                                  <div class='contents-position'>
+                                                                      <div class='head'>Category・Folder</div>
+                                                                      <div class='subject'>
+                                                                          <ol>
+                                                                             <li><span><img src='images/icon_subjectlist.png'></span>" . $subject_genre_name ."</li>
+                                                                             <li>" . $subject_section_name ."</li>
+                                                                          </ol>
+                                                                      </div>
+                                                                      <div class='contentsgroup'>
+                                                                          <p><span><img src='images/icon_contentsgroup.png'>Lecture group</span></p>
+                                                                      </div>
+                                                                  </div>
+                                                                  <div class='contents-relation'>
+                                                                      <div class='head'>Related content</div>
+                                                                      <ul>
+                                                                          <li>TB</li>
+                                                                          <li>MP4</li>
+                                                                          <li>Quiz</li>
+                                                                          <li>Questionnaire</li>
+                                                                          <li>Report</li>
+                                                                      </ul>
+                                                                  </div>
+                                                              </div>
+                                                              <div class='body-right'>
+                                                                  <div class='other-detail'>
+                                                                      <table>
+                                                                          <tr>
+                                                                              <th>Viewing status</th>
+                                              ";
+                                                                              if($item[ 'child_data' ][ $j ]['proportion'] == '') {
+                                                                                  echo "<td>Not watched</td>";
+                                                                              } else {
+                                                                                  echo "<td>" . $item[ 'child_data' ][ $j ]['proportion'] . "％</td>";
+                                                                              }
+                                              echo "
+                                                                          </tr>
+                                                                          <tr>
+                                                                              <th>Last viewing history</th>
+                                              ";
+                                                                              if($item[ 'child_data' ][ $j ]['play_start_datetime'] == '0000-00-00 00:00:00') {
+                                                                                  echo "<td>Not watched</td>";
+                                                                              } else {
+                                                                                  echo "<td>" . $item[ 'child_data' ][ $j ]['play_start_datetime'] . "</td>";
+                                                                              }
+                                              echo "
+                                                                          </tr>
+                                                                          <tr>
+                                                                              <th>Deadline for viewing</th>
+                                              ";
+                                                                              if($item[ 'child_data' ][ $j ]['first_day'] == '0000-01-01' && $item[ 'child_data' ][ $j ]['last_day'] == '9999-12-31') {
+                                                                                  echo "<td>Related thread</td>";
+                                                                              } else if($item[ 'child_data' ][ $j ]['first_day'] != '0000-01-01' && $item[ 'child_data' ][ $j ]['last_day'] == '9999-12-31') {
+                                                                                  echo "<td>" . $item[ 'child_data' ][ $j ]['first_day'] . " ～ </td>";
+                                                                              } else if($item[ 'child_data' ][ $j ]['first_day'] == '0000-01-01' && $item[ 'child_data' ][ $j ]['last_day'] != '9999-12-31') {
+                                                                                  echo "<td> ～ " . $item[ 'child_data' ][ $j ]['last_day'] . "</td>";
+                                                                              } else {
+                                                                                  echo "<td>" . $item[ 'child_data' ][ $j ]['first_day'] . " ～ " . $item[ 'child_data' ][ $j ]['last_day'] . "</td>";
+                                                                              }
+                                              echo "
+                                                                          </tr>
+                                                                          <tr>
+                                                                              <th>Number of attendance</th>
+                                                                              <td>" . $item[ 'child_data' ][ $j ]['watch_count'] . "Times</td>
+                                                                          </tr>
+                                                                          <tr>
+                                                                              <th>capacity</th>
+                                                                              <td>" . size_format($item[ 'child_data' ][ $j ]['size']) . "</td>
+                                                                          </tr>
+                                                                          <!--
+                                                                          <tr class='message'>
+                                                                              <th>Contributor</th>
+                                                                              <td><div class='linkbtn'><a>KJS teacher</a></div></td>
+                                                                          </tr>
+                                                                          <tr class='message'>
+                                                                              <th>Related thread</th>
+                                                                              <td>
+                                                                                  <div class='linkbtn'><a>Thread 01</a></div>
+                                                                                  <div class='linkbtn'><a>Thread 02</a></div>
+                                                                                  <div class='linkbtn'><a>Thread 03</a></div>
+                                                                              </td>
+                                                                          </tr>
+                                                                          -->
+                                                                      </table>
+                                                                  </div>
+                                                              </div>
+                                                          </div>
+                                                      </div>
+                                                  </div>
+                                              </div>
+                                              ";
+                                          }
+                                          break;
+
+                                          case 1:
+                                          echo "
+                                              <!-- contents item = questionnaire -->
+                                              <div class='list-dummy-02 contents-item questionnaire'>
+                                                  <div class='in'>
+                                          ";
+                                                if($item[ 'child_data' ][ $j ]['answer_flg'] == 1) {
+                                                    echo "
+                                                        <div class='title'>" . $item[ 'child_data' ][ $j ]['title'] . "</div>
+                                                    ";
+                                                } else {
+                                                    echo "
+                                                        <div class='title'><a href='questionnaire/questionnaire.php?id=" . $item[ 'child_data' ][ $j ]['primary_key'] . "&bid=" . $subject_section_id . "'>" . $item[ 'child_data' ][ $j ]['title'] . "</a></div>
+                                                    ";
+                                                }
+                                          echo "
+                                                      <div class='detail-info'>
+                                                          <div class='important-info'>
+                                                              <span class='limit'>～" . $item[ 'child_data' ][ $j ]['last_day'] . "</span>
+                                                          </div>
+                                                          <div class='others'>
+                                          ";
+                                                              if($item[ 'child_data' ][ $j ]['answer_flg'] == 1) {
+                                                                  echo "
+                                                                      <div class='progress complete'>Submitted</div>
+                                                                      <ul class='btns'>
+                                                                          <li class='info'>
+                                                                            <button data-toggle='modal' data-target='#Modal-questionnaireinfo-id=" . $item[ 'child_data' ][ $j ]['primary_key'] . "'>
+                                                                            </button>
+                                                                          </li><!-- 詳細 -->
+                                                                      </ul>
+                                                                  ";
+                                                              } else {
+                                                                  echo "
+                                                                      <div class='progress incomplete'>Not submitted</div>
+                                                                      <ul class='btns'>
+                                                                          <li class='write'>
+                                                                            <a href='questionnaire/questionnaire.php?id=" . $item[ 'child_data' ][ $j ]['primary_key'] .
+                                                                              "&bid=" . $subject_section_id . "'>
+                                                                            </a>
+                                                                          </li><!-- 書く -->
+                                                                          <li class='info'>
+                                                                            <button data-toggle='modal' data-target='#Modal-questionnaireinfo-id=" . $item[ 'child_data' ][ $j ]['primary_key'] . "'></button>
+                                                                          </li><!-- 詳細 -->
+                                                                      </ul>
+                                                                  ";
+                                                              }
+                                          echo "
+                                                          </div>
+                                                      </div>
+                                                  </div>
+                                              </div>
+                                          <!-- modal(アンケート詳細) -->
+                                          <div class='modal fade contentsinfo questionnaire' id='Modal-questionnaireinfo-id=" . $item[ 'child_data' ][ $j ]['primary_key'] . "' tabindex='-1' role='dialog' aria-hidden='true'>
+                                              <div class='modal-dialog' role='document'>
+                                                  <div class='modal-content'>
+                                                      <div class='modal-header'>
+                                                          <p class='icon'></p>
+                                                          <p class='contents-type'>Questionnaire</p>
+                                                          <p class='contents-title'>" . $item[ 'child_data' ][ $j ]['title'] . "</p>
+                                                          <button type='button' class='close' data-dismiss='modal' aria-label='Close'>
+                                                              <span aria-hidden='true'>&times;</span>
+                                                          </button>
+                                                      </div>
+                                                      <div class='modal-body contentsinfo'>
+                                                          <div class='body-left'>
+                                                              <div class='btngroup'>
+                                                                  <ul>
+                                          ";
+                                                              if($item[ 'child_data' ][ $j ]['answer_flg'] == 1) {
+                                                              } else {
+                                                                  echo "<li class='play'><a href='questionnaire/questionnaire.php?id=" . $item[ 'child_data' ][ $j ]['primary_key'] . "&bid=" . $subject_section_id . "'>To answer</a></li>";
+                                                              }
+                                          echo "
+                                                                  </ul>
+                                                              </div>
+                                                              <div class='contents-position'>
+                                                                  <div class='head'>Category・Folder</div>
+                                                                  <div class='subject'>
+                                                                      <ol>
+                                                                         <li><span><img src='images/icon_subjectlist.png'></span>" . $subject_genre_name ."</li>
+                                                                         <li>" . $subject_section_name ."</li>
+                                                                      </ol>
+                                                                  </div>
+                                                                  <div class='contentsgroup'>
+                                                                      <p><span><img src='images/icon_contentsgroup.png'>Lecture group</span></p>
+                                                                  </div>
+                                                              </div>
+                                                              <div class='contents-relation'>
+                                                                  <div class='head'>Related content</div>
+                                                                  <ul>
+                                                                      <li>TB</li>
+                                                                      <li>MP4</li>
+                                                                      <li>Quiz</li>
+                                                                      <li>Questionnaire</li>
+                                                                      <li>Report</li>
+                                                                  </ul>
+                                                              </div>
+                                                          </div>
+                                                          <div class='body-right'>
+                                                              <div class='other-detail'>
+                                                                  <table>
+                                                                      <tr>
+                                                                          <th>Answer situation</th>
+                                          ";
+                                                              if($item[ 'child_data' ][ $j ]['answer_flg'] == 1) {
+                                                                  echo "<td>Answered<td>";
+                                                              } else {
+                                                                  echo "<td>Last answer<td>";
+                                                              }
+                                          echo "
+                                                                      </tr>
+                                                                      <tr>
+                                                                          <th>Reply deadline</th>
+                                          ";
+                                                                          if($item[ 'child_data' ][ $j ]['start_day'] == '0000-01-01' && $item[ 'child_data' ][ $j ]['last_day'] == '9999-12-31') {
+                                                                              echo "<td>Related thread</td>";
+                                                                          } else if($item[ 'child_data' ][ $j ]['start_day'] != '0000-01-01' && $item[ 'child_data' ][ $j ]['last_day'] == '9999-12-31') {
+                                                                              echo "<td>" . $item[ 'child_data' ][ $j ]['start_day'] . " ～ </td>";
+                                                                          } else if($item[ 'child_data' ][ $j ]['start_day'] == '0000-01-01' && $item[ 'child_data' ][ $j ]['last_day'] != '9999-12-31') {
+                                                                              echo "<td> ～ " . $item[ 'child_data' ][ $j ]['last_day'] . "</td>";
+                                                                          } else {
+                                                                              echo "<td>" . $item[ 'child_data' ][ $j ]['start_day'] . " ～ " . $item[ 'child_data' ][ $j ]['last_day'] . "</td>";
+                                                                          }
+                                          echo "
+                                                                      </tr>
+                                                                      <!--
+                                                                      <tr class='message'>
+                                                                          <th>Contributor</th>
+                                                                          <td><div class='linkbtn'><a>KJS teacher</a></div></td>
+                                                                      </tr>
+                                                                      <tr class='message'>
+                                                                          <th>Related thread</th>
+                                                                          <td>
+                                                                              <div class='linkbtn'><a>Thread 01</a></div>
+                                                                              <div class='linkbtn'><a>Thread 02</a></div>
+                                                                              <div class='linkbtn'><a>Thread 03</a></div>
+                                                                          </td>
+                                                                      </tr>
+                                                                      -->
+                                                                  </table>
+                                                              </div>
+                                                          </div>
+                                                      </div>
+                                                  </div>
+                                              </div>
+                                          </div>
+                                          ";
+                                          break;
+
+                                          case 2:
+                                          echo "
+                                              <!-- contents item = report -->
+                                              <div class='list-dummy-03 contents-item report'>
+                                                  <div class='in'>
+                                          ";
+                                                if($item[ 'child_data' ][ $j ]['answer_flg'] == 1) {
+                                                    echo "
+                                                        <div class='title'>" . $item[ 'child_data' ][ $j ]['title'] . "</div>
+                                                    ";
+                                                } else {
+                                                    echo "
+                                                        <div class='title'><a href='report/report.php?id=" . $item[ 'child_data' ][ $j ]['primary_key'] . "&bid=" . $subject_section_id . "'>" . $item[ 'child_data' ][ $j ]['title'] . "</a></div>
+                                                    ";
+                                                }
+                                          echo "
+                                                      <div class='detail-info'>
+                                                          <div class='important-info'>
+                                                              <span class='limit'>～" . $item[ 'child_data' ][ $j ]['last_day'] . "</span>
+                                                          </div>
+                                                          <div class='others'>
+                                          ";
+                                                              if($item[ 'child_data' ][ $j ]['answer_flg'] == 1) {
+                                                                  echo "
+                                                                      <div class='progress complete'>Submitted</div>
+                                                                      <ul class='btns'>
+                                                                          <li class='info'>
+                                                                            <button data-toggle='modal' data-target='#Modal-reportinfo-id=" . $item[ 'child_data' ][ $j ]['primary_key'] . "'></button>
+                                                                          </li><!-- 詳細 -->
+                                                                      </ul>
+                                                                  ";
+                                                              } else {
+                                                                  echo "
+                                                                      <div class='progress incomplete'>Not submitted</div>
+                                                                      <ul class='btns'>
+                                                                          <li class='write'><a href='report/report.php?id=" . $item[ 'child_data' ][ $j ]['primary_key'] . "&bid=" . $subject_section_id . "'></a></li><!-- 書く Write-->
+                                                                          <li class='info'><button data-toggle='modal' data-target='#Modal-reportinfo-id=" . $item[ 'child_data' ][ $j ]['primary_key'] . "'></button></li><!-- 詳細 Details-->
+                                                                      </ul>
+                                                                  ";
+                                                              }
+                                          echo "
+                                                          </div>
+                                                      </div>
+                                                  </div>
+                                              </div>
+                                          <!-- modal(レポート詳細) modal (report details)-->
+                                          <div class='modal fade contentsinfo report' id='Modal-reportinfo-id=" . $item[ 'child_data' ][ $j ]['primary_key'] . "' tabindex='-1' role='dialog' aria-hidden='true'>
+                                              <div class='modal-dialog' role='document'>
+                                                  <div class='modal-content'>
+                                                      <div class='modal-header'>
+                                                          <p class='icon'></p>
+                                                          <p class='contents-type'>Report</p>
+                                                          <p class='contents-title'>" . $item[ 'child_data' ][ $j ]['title'] . "</p>
+                                                          <button type='button' class='close' data-dismiss='modal' aria-label='Close'>
+                                                              <span aria-hidden='true'>&times;</span>
+                                                          </button>
+                                                      </div>
+                                                      <div class='modal-body contentsinfo'>
+                                                          <div class='body-left'>
+                                                              <div class='btngroup'>
+                                                                  <ul>
+                                          ";
+                                                              if($item[ 'child_data' ][ $j ]['answer_flg'] == 1) {
+                                                              } else {
+                                                                  echo "<li class='play'><a href='report/report.php?id=" . $item[ 'child_data' ][ $j ]['primary_key'] . "&bid=" . $subject_section_id . "'>create</a></li>";
+                                                              }
+                                          echo "
+                                                                  </ul>
+                                                              </div>
+                                                              <div class='contents-position'>
+                                                                  <div class='head'>Category・Folder</div>
+                                                                  <div class='subject'>
+                                                                      <ol>
+                                                                         <li><span><img src='images/icon_subjectlist.png'></span>" . $subject_genre_name ."</li>
+                                                                         <li>" . $subject_section_name ."</li>
+                                                                      </ol>
+                                                                  </div>
+                                                                  <div class='contentsgroup'>
+                                                                      <p><span><img src='images/icon_contentsgroup.png'>Lecture group</span></p>
+                                                                  </div>
+                                                              </div>
+                                                              <div class='contents-relation'>
+                                                                  <div class='head'>Related content</div>
+                                                                  <ul>
+                                                                      <li>TB</li>
+                                                                      <li>MP4</li>
+                                                                      <li>Quiz</li>
+                                                                      <li>Questionnaire</li>
+                                                                      <li>Report</li>
+                                                                  </ul>
+                                                              </div>
+                                                          </div>
+                                                          <div class='body-right'>
+                                                              <div class='other-detail'>
+                                                                  <table>
+                                                                      <tr>
+                                                                          <th>Answer situation</th>
+                                          ";
+                                                              if($item[ 'child_data' ][ $j ]['answer_flg'] == 1) {
+                                                                  echo "<td>Answered<td>";
+                                                              } else {
+                                                                  echo "<td>Last answer<td>";
+                                                              }
+                                          echo "
+                                                                      </tr>
+                                                                      <tr>
+                                                                          <th>Deadline for creation</th>
+                                          ";
+                                                                          if($item[ 'child_data' ][ $j ]['start_day'] == '0000-01-01' && $item[ 'child_data' ][ $j ]['last_day'] == '9999-12-31') {
+                                                                              echo "<td>Related thread</td>";
+                                                                          } else if($item[ 'child_data' ][ $j ]['start_day'] != '0000-01-01' && $item[ 'child_data' ][ $j ]['last_day'] == '9999-12-31') {
+                                                                              echo "<td>" . $item[ 'child_data' ][ $j ]['start_day'] . " ～ </td>";
+                                                                          } else if($item[ 'child_data' ][ $j ]['start_day'] == '0000-01-01' && $item[ 'child_data' ][ $j ]['last_day'] != '9999-12-31') {
+                                                                              echo "<td> ～ " . $item[ 'child_data' ][ $j ]['last_day'] . "</td>";
+                                                                          } else {
+                                                                              echo "<td>" . $item[ 'child_data' ][ $j ]['start_day'] . " ～ " . $item[ 'child_data' ][ $j ]['last_day'] . "</td>";
+                                                                          }
+                                          echo "
+                                                                      </tr>
+                                                                      <!--
+                                                                      <tr class='message'>
+                                                                          <th>Contributor</th>
+                                                                          <td><div class='linkbtn'><a>KJS teacher</a></div></td>
+                                                                      </tr>
+                                                                      <tr class='message'>
+                                                                          <th>Related thread</th>
+                                                                          <td>
+                                                                              <div class='linkbtn'><a>Thread 01</a></div>
+                                                                              <div class='linkbtn'><a>Thread 02</a></div>
+                                                                              <div class='linkbtn'><a>Thread 03</a></div>
+                                                                          </td>
+                                                                      </tr>
+                                                                      -->
+                                                                  </table>
+                                                              </div>
+                                                          </div>
+                                                      </div>
+                                                  </div>
+                                              </div>
+                                          </div>
+                                          ";
+                                          break;
+
+                                          case 3:
+                                          echo "
+                                          <!-- contents item = test(Pass) -->
+                                          <div class='list-dummy-04 contents-item test'>
+                                              <div class='in'>
+                                          ";
+                                                    if($item[ 'child_data' ][ $j ]['repeat_challenge'] > 0 && $item[ 'child_data' ][ $j ]['repeat_challenge'] <= count($item[ 'child_data' ][ $j ]) - $quiz_parameter_value) {
+                                                        echo "<div class='title'>" . $item[ 'child_data' ][ $j ]['title'] . "</div>";
+                                                    } else if($item[ 'child_data' ][ $j ]['last_answer_id'] == 0) {
+                                                        echo "<div class='title'><a href='quiz/start.php?id=" . $item[ 'child_data' ][ $j ]['primary_key'] . "&bid=" . $subject_section_id . "'>" . $item[ 'child_data' ][ $j ]['title'] . "</a></div>";
+                                                    } else {
+                                                        echo "<div class='title'><a href='quiz/start.php?id=" . $item[ 'child_data' ][ $j ]['primary_key'] . "&an=" . $item[ 'child_data' ][ $j ]['last_answer_id'] . "&bid=" . $subject_section_id . "'>" . $item[ 'child_data' ][ $j ]['title'] . "</a></div>";
+                                                    }
+                                          echo "
+                                                  <div class='detail-info'>
+                                                      <div class='important-info'>
+                                          ";
+                                                          if($item[ 'child_data' ][ $j ]['repeat_challenge'] != 0) {
+                                                            // 2019/6/03 count関数対策 2019/6/03 count function countermeasure
+                                                              if(is_countable($item[ 'child_data' ][ $j ])){
+                                                                echo "<span class='count'>after" . ($item[ 'child_data' ][ $j ]['repeat_challenge'] - (count($item[ 'child_data' ][ $j ]) - $quiz_parameter_value)) . "Times</span>";
+                                                              }
+                                                              //echo "<span class='count'>after" . ($item[ 'child_data' ][ $j ]['repeat_challenge'] - (count($item[ 'child_data' ][ $j ]) - $quiz_parameter_value)) . "回</span>";
+                                                          } else {
+                                                              echo "<span class='count'>Unlimited</span>";
+                                                          }
+                                          echo "
+                                                          <span class='limit'>～" . $item[ 'child_data' ][ $j ]['last_day'] . "</span>
+                                                      </div>
+                                                      <div class='others'>
+                                          ";
+                                                          if($item[ 'child_data' ][ $j ]['answer_count'] > 0) {
+                                                              echo "<div class='progress complete'>" . $item[ 'child_data' ][ $j ]['max_score'] . "point</div>";
+                                                          } else {
+                                                              echo "<div class='progress failure'></div>";
+                                                          }
+
+                                                          if($item[ 'child_data' ][ $j ]['repeat_challenge'] > 0 && $item[ 'child_data' ][ $j ]['repeat_challenge'] <= count($item[ 'child_data' ][ $j ]) - $quiz_parameter_value) {
+                                                              echo "
+                                                                  <ul class='btns'>
+                                                                  </li>
+                                                              ";
+                                                          } else if($item[ 'child_data' ][ $j ]['last_answer_id'] == 0) {
+                                                              echo "
+                                                                  <ul class='btns'>
+                                                                      <li class='write'><a href='quiz/start.php?id=" . $item[ 'child_data' ][ $j ]['primary_key'] . "&bid=" . $subject_section_id . "'></a><!-- I take a test -->
+                                                                  </li>
+                                                              ";
+                                                          } else {
+                                                              echo "
+                                                                  <ul class='btns'>
+                                                                      <li class='write'><a href='quiz/start.php?id=" . $item[ 'child_data' ][ $j ]['primary_key'] . "&an=" . $item[ 'child_data' ][ $j ]['last_answer_id'] . "&bid=" . $subject_section_id . "'></a><!-- I take a test -->
+                                                                  </li>
+                                                              ";
+                                                          }
+                                                          if(isset($item[ 'child_data' ][ $j ]['last_register_datetime'])) {
+                                                              #echo "<li class='graph'><a href='quiz/result.php?id=" . $item['last_quiz_answer'] . "&bid=" . $subject_section_id . "'></a></li><!-- テスト結果 -->";
+                                                              echo "<li class='graph'><a href='quiz/result.php?id=" . $item[ 'child_data' ][ $j ]['primary_key'] . "&an=" . $item[ 'child_data' ][ $j ]['last_quiz_answer'] . "&bid=" . $subject_section_id . "'></a></li><!-- テスト結果 -->";
+                                                          }
+                                          echo "
+                                                              <li class='info'><button href='' data-toggle='modal' data-target='#Modal-testinfo-id=" . $item[ 'child_data' ][ $j ]['primary_key'] . "'></button></li><!-- 詳細 Details-->
+                                                          </ul>
+                                                      </div>
+                                                  </div>
+                                              </div>
+                                          </div>
+                                          ";
+                                          echo "
+                                          <!-- modal(テスト詳細) modal (test details)-->
+                                          <div class='modal fade contentsinfo test' id='Modal-testinfo-id=" . $item[ 'child_data' ][ $j ]['primary_key'] . "' tabindex='-1' role='dialog' aria-hidden='true'>
+                                              <div class='modal-dialog' role='document'>
+                                                  <div class='modal-content'>
+                                                      <div class='modal-header'>
+                                                          <p class='icon'></p>
+                                                          <p class='contents-type'>Quiz</p>
+                                                          <p class='contents-title'>" . $item[ 'child_data' ][ $j ]['title'] . "</p>
+                                                          <button type='button' class='close' data-dismiss='modal' aria-label='Close'>
+                                                              <span aria-hidden='true'>&times;</span>
+                                                          </button>
+                                                      </div>
+                                                      <div class='modal-body contentsinfo'>
+                                                          <div class='body-left'>
+                                                              <div class='btngroup'>
+                                                                  <ul>
+                                              ";
+                                                                  if($item[ 'child_data' ][ $j ]['repeat_challenge'] > 0 && $item[ 'child_data' ][ $j ]['repeat_challenge'] <= count($item[ 'child_data' ][ $j ]) - $quiz_parameter_value) {
+                                                                      echo "
+                                                                          <li class='write'>
+                                                                          </li>
+                                                                      ";
+                                                                  } else if($item[ 'child_data' ][ $j ]['last_answer_id'] == 0) {
+                                                                      echo "
+                                                                          <li class='write'>
+                                                                              <a href='quiz/start.php?id=" . $item[ 'child_data' ][ $j ]['primary_key'] . "&bid=" . $subject_section_id . "'>I take a test</a>
+                                                                          </li>
+                                                                      ";
+                                                                  } else {
+                                                                      echo "
+                                                                          <li class='write'>
+                                                                              <a href='quiz/start.php?id=" . $item[ 'child_data' ][ $j ]['primary_key'] . "&an=" . $item[ 'child_data' ][ $j ]['last_answer_id'] . "&bid=" . $subject_section_id . "'>I take a test</a>
+                                                                          </li>
+                                                                      ";
+                                                                  }
+                                              echo "
+                                                                  </ul>
+                                                              </div>
+                                                              <div class='test-count'>
+                                                                  <div class='head'>View detailed results</div>
+                                                                  <ul class='test-count-select'>
+
+                                              ";
+                                                                      for($i = 0, $an = 0; $i < count($item[ 'child_data' ][ $j ]) - $quiz_parameter_value ; $i++) {
+                                                                          if ($item[ 'child_data' ][ $j ][$i]['end_flag'] == 1) {
+                                                                              $an++;
+                                                                              if ($item[ 'child_data' ][ $j ][$i]['qualifying_score'] == 0) {
+                                                                                  echo "
+                                                                                      <li>
+                                                                                          <a href='quiz/result.php?id=" . $item[ 'child_data' ][ $j ][$i]['quiz_id'] . "&an=" . $item[ 'child_data' ][ $j ][$i]['answer_id'] . "&bid=" . $subject_section_id . "'>Q" . ($an) . "Times<span class='###No judgment###'>No judgment</span></a>
+                                                                                      </li>
+                                                                                  ";
+                                                                              } else if($item[ 'child_data' ][ $j ][$i]['qualifying_score'] <= $item[ 'child_data' ][ $j ][$i]['total_score']) {
+                                                                                  echo "
+                                                                                      <li>
+                                                                                          <a href='quiz/result.php?id=" . $item[ 'child_data' ][ $j ][$i]['quiz_id'] . "&an=" . $item[ 'child_data' ][ $j ][$i]['answer_id'] . "&bid=" . $subject_section_id . "'>Q" . ($an) . "Times<span class='t'>Pass</span></a>
+                                                                                      </li>
+                                                                                  ";
+                                                                              } else if($item[ 'child_data' ][ $j ][$i]['qualifying_score'] > $item[ 'child_data' ][ $j ][$i]['total_score']) {
+                                                                                  echo "
+                                                                                      <li>
+                                                                                          <a href='quiz/result.php?id=" . $item[ 'child_data' ][ $j ][$i]['quiz_id'] . "&an=" . $item[ 'child_data' ][ $j ][$i]['answer_id'] . "&bid=" . $subject_section_id . "'>Q" . ($an) . "Times<span class='f'>failure</span></a>
+                                                                                      </li>
+                                                                                  ";
+                                                                              }
+                                                                          }
+                                                                      }
+                                              echo "
+                                                                  </ul>
+                                                              </div>
+                                                              <div class='contents-position'>
+                                                                  <div class='head'>Category・Folder</div>
+                                                                  <div class='subject'>
+                                                                      <ol>
+                                                                         <li><span><img src='images/icon_subjectlist.png'></span>" . $subject_genre_name ."</li>
+                                                                         <li>" . $subject_section_name ."</li>
+                                                                      </ol>
+                                                                  </div>
+                                                                  <div class='contentsgroup'>
+                                                                      <p><span><img src='images/icon_contentsgroup.png'>Lecture group</span></p>
+                                                                  </div>
+                                                              </div>
+                                                              <div class='contents-relation'>
+                                                                  <div class='head'>Related content</div>
+                                                                  <ul>
+                                                                      <li>TB</li>
+                                                                      <li>MP4</li>
+                                                                      <li>Quiz</li>
+                                                                      <li>Questionnaire</li>
+                                                                      <li>Report</li>
+                                                                  </ul>
+                                                              </div>
+                                                          </div>
+                                                          <div class='body-right'>
+                                                              <div class='other-detail'>
+                                                                  <table>
+                                                                      <tr>
+                                                                          <th>Examination status</th>
+                                          ";
+                                                                          if($item[ 'child_data' ][ $j ]['answer_count'] == 0) {
+                                                                              echo "<td>Not yet taken</td>";
+                                                                          } else {
+                                                                              echo "<td>Take an exam</td>";
+                                                                          }
+                                          echo "
+                                                                      </tr>
+                                                                      <tr>
+                                                                          <th>Final exam date</th>
+                                          ";
+                                                                          if($item[ 'child_data' ][ $j ]['answer_count'] == 0) {
+                                                                              echo "<td>-</td>";
+                                                                          } else {
+                                                                              echo "<td>～～～</td>";
+                                                                          }
+                                          echo "
+                                                                      </tr>
+                                                                      <tr>
+                                                                          <th>Examination deadline</th>
+                                          ";
+                                                                          if($item[ 'child_data' ][ $j ]['start_day'] == '0000-01-01' && $item[ 'child_data' ][ $j ]['last_day'] == '9999-12-31') {
+                                                                              echo "<td>Related thread</td>";
+                                                                          } else if($item[ 'child_data' ][ $j ]['start_day'] != '0000-01-01' && $item[ 'child_data' ][ $j ]['last_day'] == '9999-12-31') {
+                                                                              echo "<td>" . $item[ 'child_data' ][ $j ]['start_day'] . " ～ </td>";
+                                                                          } else if($item[ 'child_data' ][ $j ]['start_day'] == '0000-01-01' && $item[ 'child_data' ][ $j ]['last_day'] != '9999-12-31') {
+                                                                              echo "<td> ～ " . $item[ 'child_data' ][ $j ]['last_day'] . "</td>";
+                                                                          } else {
+                                                                              echo "<td>" . $item[ 'child_data' ][ $j ]['start_day'] . " ～ " . $item[ 'child_data' ][ $j ]['last_day'] . "</td>";
+                                                                          }
+                                          echo "
+                                                                      </tr>
+                                                                      <tr>
+                                                                          <th>Number of exams</th>
+                                                                          <td>" . $item[ 'child_data' ][ $j ]['answer_count'] . "Times</td>
+                                                                      </tr>
+                                                                          <th>Number limit</th>
+                                          ";
+                                                                          if($item[ 'child_data' ][ $j ]['repeat_challenge'] == 0) {
+                                                                              echo "<td>Unlimited</td>";
+                                                                          } else {
+                                                                              echo "<td>" . $item[ 'child_data' ][ $j ]['repeat_challenge'] . "Times</td>";
+                                                                          }
+                                          echo "
+                                                                      </tr>
+                                                                      <!--
+                                                                      <tr>
+                                                                          <th>capacity</th>
+                                                                          <td>20MB</td>
+                                                                      </tr>
+                                                                      <tr class='message'>
+                                                                          <th>Contributor</th>
+                                                                          <td><div class='linkbtn'><a>KJS teacher</a></div></td>
+                                                                      </tr>
+                                                                      <tr class='message'>
+                                                                          <th>Related thread</th>
+                                                                          <td>
+                                                                              <div class='linkbtn'><a>Thread 01</a></div>
+                                                                              <div class='linkbtn'><a>Thread 02</a></div>
+                                                                              <div class='linkbtn'><a>Thread 03</a></div>
+                                                                          </td>
+                                                                      </tr>
+                                                                      -->
+                                                                      <tr>
+                                                                          <th>Passing score</th>
+                                          ";
+                                                                          if($item[ 'child_data' ][ $j ]['qualifying_score'] == 0) {
+                                                                              echo "<td>No passing score</td>";
+                                                                          } else {
+                                                                              echo "<td>" . $item[ 'child_data' ][ $j ]['qualifying_score'] . "point</td>";
+                                                                          }
+                                          echo "
+                                                                      </tr>
+                                                                      <tr>
+                                                                          <th>Highest score</th>
+                                          ";
+                                                                          if($item[ 'child_data' ][ $j ]['max_score'] == NULL) {
+                                                                              echo "<td>Not yet taken</td>";
+                                                                          } else {
+                                                                              echo "<td>" . $item[ 'child_data' ][ $j ]['max_score'] . "point</td>";
+                                                                          }
+                                          echo "
+                                                                      </tr>
+                                                                  </table>
+                                                              </div>
+                                                          </div>
+                                                      </div>
+                                                  </div>
+                                              </div>
+                                          </div>
+                                          ";
+                                          break;
+
+                                        }
+                                      }
+                                    }
+                                  echo "</div>";
+                                  break;
+                                    }
+
+                                }
+                            ?>
+                        <?php endforeach; ?>
+                    <?php } else { ?>
+                    <?php
+                        if($i == 0 && isset($_GET['bid'])) {
+                            echo "
+                                <div class='contents-item no-item'>
+                                    <p>There is no content</p>
+                                </div>
+                            ";
+                        } else if($i == 0 && !isset($_GET['bid'])) {
+                            echo "
+                                <div class='contents-item no-item'>
+                                    <p>Please select a content group</p>
+                                </div>
+                            ";
+                        }
+                    ?>
+                    <?php }; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--<script type="text/javascript" src="https://tbwp3.tbshare.net/scripts/tbwp3"></script>-->
+<script type="text/javascript" src="js/contentslist.js"></script>
+<?php echo date("Y/m/d H:i:s"); ?>
+<?php $time = date("Y/m/d H:i:s"); ?>
+<?php $time ?>
+</body>
+</html>
